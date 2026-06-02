@@ -1,0 +1,12 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Logs / local server artifacts
+*.log
+
+# Dependencies (none currently — CDN only)
+node_modules/
