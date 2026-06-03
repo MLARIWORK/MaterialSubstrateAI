@@ -827,6 +827,58 @@
     .legend{ gap: 16px; }
     .legend-item{ font-size: 10px; }
   }
+
+  /* ============================================================
+     LAYER FILTER — interactive legend toggles + map/panel emphasis
+     ============================================================ */
+  .legend-item{
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 9px;
+    border-radius: 999px;
+    transition: opacity .2s ease, background .2s ease;
+  }
+  .legend-item:hover{ background: rgba(28, 24, 18, 0.06); }
+  .legend-item:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+  .legend-dot{ border: 1.5px solid transparent; box-sizing: border-box; transition: background .2s ease, box-shadow .2s ease; }
+  /* filtered-off layer: hollow ring + dimmed label */
+  .legend-item.inactive{ opacity: .5; }
+  .legend-item.inactive .legend-dot{ background: transparent !important; box-shadow: none !important; }
+  .legend-item.inactive .legend-dot.mining{ border-color: var(--mining); }
+  .legend-item.inactive .legend-dot.processing{ border-color: var(--processing); }
+  .legend-item.inactive .legend-dot.refining{ border-color: var(--refining); }
+
+  /* smooth fades for map elements */
+  #map .node-inner circle,
+  #map .arc,
+  #map .arc-arrow,
+  #map .country{ transition: opacity .35s ease; }
+
+  /* dim inactive layers on the map (markers) */
+  #map.dim-mining .node-mining{ opacity: .1; }
+  #map.dim-processing .node-processing{ opacity: .1; }
+  #map.dim-refining .node-refining{ opacity: .1; }
+  /* arcs/arrows span two stages — dim if either endpoint layer is off */
+  #map.dim-mining .arc.mining-processing,
+  #map.dim-processing .arc.mining-processing,
+  #map.dim-processing .arc.processing-refining,
+  #map.dim-refining .arc.processing-refining,
+  #map.dim-mining .arrow-mp,
+  #map.dim-processing .arrow-mp,
+  #map.dim-processing .arrow-pr,
+  #map.dim-refining .arrow-pr{ opacity: .07; }
+
+  /* right panel: bold active stages, fade inactive (only while filtering) */
+  .info-panel .chain-stage{ transition: opacity .25s ease, background .25s ease; }
+  .info-panel .chain-stage-dot{ transition: transform .2s ease; }
+  .info-panel.filtering .chain-stage.layer-dim{ opacity: .3; }
+  .info-panel.filtering .chain-stage.layer-active{
+    background: rgba(28, 24, 18, 0.035);
+    border-radius: 8px;
+  }
+  .info-panel.filtering .chain-stage.layer-active .chain-stage-label{ font-weight: 700; }
+  .info-panel.filtering .chain-stage.layer-active .chain-country-share{ font-weight: 700; color: var(--text); }
+  .info-panel.filtering .chain-stage.layer-active .chain-stage-dot{ transform: scale(1.25); }
 </style>
 </head>
 <body>
@@ -839,10 +891,10 @@
       <div class="tag">Critical Minerals & REE Supply Chain · 2024–2026</div>
     </div>
     <div class="header-right">
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot mining"></div>Mining</div>
-        <div class="legend-item"><div class="legend-dot processing"></div>Processing</div>
-        <div class="legend-item"><div class="legend-dot refining"></div>Refining</div>
+      <div class="legend" role="group" aria-label="Toggle supply-chain layers">
+        <div class="legend-item active" data-stage="mining" role="button" tabindex="0" aria-pressed="true" title="Toggle Mining layer"><div class="legend-dot mining"></div>Mining</div>
+        <div class="legend-item active" data-stage="processing" role="button" tabindex="0" aria-pressed="true" title="Toggle Processing layer"><div class="legend-dot processing"></div>Processing</div>
+        <div class="legend-item active" data-stage="refining" role="button" tabindex="0" aria-pressed="true" title="Toggle Refining layer"><div class="legend-dot refining"></div>Refining</div>
       </div>
       <button class="methodology-btn" id="open-methodology">
         Sources & Methodology
@@ -1798,6 +1850,105 @@ const radiusScale = d3.scaleSqrt().domain([0, 100]).range([3, 18]);
 let currentMineral = null;
 let world = null;
 
+/* ============================================================
+   LAYER FILTER (Mining / Processing / Refining)
+   Legend dots act as on/off toggles. Active layers are drawn at
+   full strength and "pop" in the right panel; inactive layers are
+   dimmed across the map (markers, arcs, country shading) and faded
+   in the panel. At least one layer always stays active.
+   ============================================================ */
+const LAYERS = ["mining", "processing", "refining"];
+const layerActive = { mining: true, processing: true, refining: true };
+
+/* Country name -> ISO numeric (for the countries in our dataset) */
+const COUNTRY_NAME_TO_ID = {
+  "China": "156", "USA": "840", "Australia": "036", "DRC": "180", "Chile": "152",
+  "Brazil": "076", "Russia": "643", "Canada": "124", "Indonesia": "360", "Peru": "604",
+  "Mexico": "484", "South Africa": "710", "Myanmar": "104", "India": "356", "Japan": "392",
+  "South Korea": "410", "Belgium": "056", "Germany": "276", "France": "250", "Norway": "578",
+  "Estonia": "233", "Vietnam": "704", "Malaysia": "458", "Argentina": "032", "Bolivia": "068",
+  "Philippines": "608", "New Caledonia": "540", "Kazakhstan": "398", "Mongolia": "496",
+  "Zimbabwe": "716", "Rwanda": "646", "Zambia": "894", "Austria": "040", "Finland": "246",
+  "Taiwan": "158", "Poland": "616", "Iceland": "352", "UK": "826", "Switzerland": "756",
+  "Nigeria": "566", "Tanzania": "834", "Madagascar": "450", "Mozambique": "508", "Ukraine": "804"
+};
+
+/* Tint each country by the highest-priority ACTIVE stage it participates in
+   (refining > processing > mining). Countries whose only stages are filtered
+   off fall back to plain land — so shading follows the filter. */
+function applyCountryShading() {
+  if (!currentMineral) return;
+  const m = currentMineral;
+  const byStage = {
+    mining: new Set(m.mining.map(d => d.country)),
+    processing: new Set(m.processing.map(d => d.country)),
+    refining: new Set(m.refining.map(d => d.country))
+  };
+  gCountries.selectAll("path")
+    .attr("class", d => {
+      let cls = "country";
+      for (const [name, isoId] of Object.entries(COUNTRY_NAME_TO_ID)) {
+        if (isoId.padStart(3, "0") === String(d.id).padStart(3, "0")) {
+          if (layerActive.refining && byStage.refining.has(name)) cls += " has-refining";
+          else if (layerActive.processing && byStage.processing.has(name)) cls += " has-processing";
+          else if (layerActive.mining && byStage.mining.has(name)) cls += " has-mining";
+          break;
+        }
+      }
+      return cls;
+    });
+}
+
+/* Push the current filter state into the DOM: map dimming classes on the SVG,
+   legend toggle UI, country shading, and right-panel emphasis. */
+function applyLayerFilter() {
+  const svg = document.getElementById("map");
+  const filtering = LAYERS.some(s => !layerActive[s]); // any layer off?
+
+  // Map: dim inactive layers via classes on the <svg> (see CSS)
+  LAYERS.forEach(s => svg.classList.toggle("dim-" + s, !layerActive[s]));
+
+  // Legend toggle appearance + a11y
+  document.querySelectorAll(".legend-item").forEach(el => {
+    const on = !!layerActive[el.dataset.stage];
+    el.classList.toggle("active", on);
+    el.classList.toggle("inactive", !on);
+    el.setAttribute("aria-pressed", String(on));
+  });
+
+  // Country shading respects the filter
+  applyCountryShading();
+
+  // Right panel: bold active stages, fade inactive ones (only when filtering)
+  const panel = document.getElementById("info-panel");
+  panel.classList.toggle("filtering", filtering);
+  panel.querySelectorAll(".chain-stage").forEach(el => {
+    const on = !!layerActive[el.dataset.stage];
+    el.classList.toggle("layer-active", on);
+    el.classList.toggle("layer-dim", !on);
+  });
+}
+
+/* Toggle a layer, keeping at least one active. */
+function toggleLayer(stage) {
+  if (!LAYERS.includes(stage)) return;
+  const activeCount = LAYERS.filter(s => layerActive[s]).length;
+  // Don't allow turning off the last remaining active layer
+  if (layerActive[stage] && activeCount === 1) return;
+  layerActive[stage] = !layerActive[stage];
+  applyLayerFilter();
+}
+
+document.querySelectorAll(".legend-item").forEach(el => {
+  el.addEventListener("click", () => toggleLayer(el.dataset.stage));
+  el.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleLayer(el.dataset.stage); }
+  });
+});
+
+/* Initialize legend UI on load (no mineral selected yet). */
+applyLayerFilter();
+
 function resize() {
   W = mapEl.clientWidth;
   H = mapEl.clientHeight;
@@ -1943,7 +2094,7 @@ function renderMineralOnMap(m) {
     const angle = Math.atan2(next.y - mid.y, next.x - mid.x) * 180 / Math.PI;
     const color = d.kind === "mining-processing" ? "#c2392b" : "#b67d00";
     const g = gArrows.append("g")
-      .attr("class", "arc-arrow")
+      .attr("class", "arc-arrow " + (d.kind === "mining-processing" ? "arrow-mp" : "arrow-pr"))
       .attr("transform", `translate(${mid.x},${mid.y}) rotate(${angle})`)
       .attr("opacity", 0);
     const inner = g.append("g")
@@ -2057,40 +2208,14 @@ function renderMineralOnMap(m) {
     el.classList.toggle("active", el.dataset.id === m.id);
   });
 
-  // Country highlighting
-  const countriesByStage = { mining: new Set(), processing: new Set(), refining: new Set() };
-  m.mining.forEach(d => countriesByStage.mining.add(d.country));
-  m.processing.forEach(d => countriesByStage.processing.add(d.country));
-  m.refining.forEach(d => countriesByStage.refining.add(d.country));
-  // Map country name to ISO numeric (rough mapping for the countries in our list)
-  const COUNTRY_NAME_TO_ID = {
-    "China": "156", "USA": "840", "Australia": "036", "DRC": "180", "Chile": "152",
-    "Brazil": "076", "Russia": "643", "Canada": "124", "Indonesia": "360", "Peru": "604",
-    "Mexico": "484", "South Africa": "710", "Myanmar": "104", "India": "356", "Japan": "392",
-    "South Korea": "410", "Belgium": "056", "Germany": "276", "France": "250", "Norway": "578",
-    "Estonia": "233", "Vietnam": "704", "Malaysia": "458", "Argentina": "032", "Bolivia": "068",
-    "Philippines": "608", "New Caledonia": "540", "Kazakhstan": "398", "Mongolia": "496",
-    "Zimbabwe": "716", "Rwanda": "646", "Zambia": "894", "Austria": "040", "Finland": "246",
-    "Taiwan": "158", "Poland": "616", "Iceland": "352", "UK": "826", "Switzerland": "756",
-    "Nigeria": "566", "Tanzania": "834", "Madagascar": "450", "Mozambique": "508", "Ukraine": "804"
-  };
-  gCountries.selectAll("path")
-    .attr("class", d => {
-      const id = d.id; // numeric ISO
-      let cls = "country";
-      for (const [name, isoId] of Object.entries(COUNTRY_NAME_TO_ID)) {
-        if (isoId.padStart(3,"0") === String(id).padStart(3,"0")) {
-          if (countriesByStage.refining.has(name)) cls += " has-refining";
-          else if (countriesByStage.processing.has(name)) cls += " has-processing";
-          else if (countriesByStage.mining.has(name)) cls += " has-mining";
-          break;
-        }
-      }
-      return cls;
-    });
+  // Country highlighting (respects the active-layer filter)
+  applyCountryShading();
 
   // Populate info panel
   renderInfoPanel(m);
+
+  // Re-apply the current layer filter to the freshly drawn map + panel
+  applyLayerFilter();
 }
 
 /* ============================================================
@@ -2155,7 +2280,7 @@ function renderInfoPanel(m) {
       </div>`
     ).join("");
     return `
-      <div class="chain-stage">
+      <div class="chain-stage" data-stage="${stage}">
         <div class="chain-stage-header">
           <div class="chain-stage-dot ${stage}"></div>
           <div class="chain-stage-label">${title}</div>
