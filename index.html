@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Critical Minerals & REEs Powering the AI Industry — Supply Chain Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<style>
+  :root{
+    --bg: #f4ede0;         /* warm paper */
+    --bg-2: #ebe2cf;       /* slightly deeper cream */
+    --panel: #ffffff;
+    --panel-2: #faf3e3;
+    --border: #d6c8a8;     /* warm taupe border */
+    --text: #1c1812;       /* deep ink */
+    --text-dim: #5e5849;
+    --text-faint: #948c77;
+    --land: #e0d3b1;       /* sand */
+    --land-2: #d8c9a3;
+    --ocean: #ecead7;      /* pale ivory ocean */
+    --graticule: #c8baa0;
+
+    --mining: #c2392b;     /* deep coral */
+    --mining-glow: rgba(194, 57, 43, 0.35);
+    --processing: #b67d00; /* burnt amber */
+    --processing-glow: rgba(182, 125, 0, 0.35);
+    --refining: #1c7d75;   /* deep teal */
+    --refining-glow: rgba(28, 125, 117, 0.35);
+
+    --accent: #6e2e3a;     /* burgundy */
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(28, 125, 117, 0.06), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(194, 57, 43, 0.06), transparent 45%),
+      var(--bg);
+  }
+
+  .app{
+    display: grid;
+    grid-template-columns: clamp(280px, 22vw, 380px) 1fr clamp(320px, 25vw, 440px);
+    grid-template-rows: 64px 1fr;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ====== HEADER ====== */
+  header{
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(244, 237, 224, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+  }
+  .brand{
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .brand .mark{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .brand .mark em{
+    color: var(--accent);
+    font-style: italic;
+  }
+  .brand .tag{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+    padding-left: 14px;
+    border-left: 1px solid var(--border);
+  }
+  .legend{
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  .legend-item{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .legend-dot{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .legend-dot.mining{ background: var(--mining); box-shadow: 0 0 8px var(--mining-glow); }
+  .legend-dot.processing{ background: var(--processing); box-shadow: 0 0 8px var(--processing-glow); }
+  .legend-dot.refining{ background: var(--refining); box-shadow: 0 0 8px var(--refining-glow); }
+
+  /* ====== LEFT SIDEBAR — MINERAL SELECTOR ====== */
+  .sidebar{
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    background: linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+  }
+  .sidebar::-webkit-scrollbar{ width: 6px; }
+  .sidebar::-webkit-scrollbar-track{ background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 3px; }
+
+  .filter-box{
+    padding: 18px 20px 12px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-2);
+    z-index: 5;
+  }
+  .filter-box input{
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border 0.2s;
+  }
+  .filter-box input:focus{ border-color: var(--accent); }
+  .filter-box input::placeholder{ color: var(--text-faint); }
+
+  .group{
+    padding: 16px 0 8px 0;
+  }
+  .group-title{
+    padding: 0 20px 8px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .mineral-item{
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center;
+    padding: 9px 20px;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-left: 2px solid transparent;
+  }
+  .mineral-item:hover{
+    background: rgba(255,255,255,0.025);
+    border-left-color: var(--text-faint);
+  }
+  .mineral-item.active{
+    background: linear-gradient(90deg, rgba(110, 46, 58, 0.08), transparent);
+    border-left-color: var(--accent);
+  }
+  .symbol{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--text);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    letter-spacing: -0.02em;
+  }
+  .mineral-item.active .symbol{
+    background: rgba(110, 46, 58, 0.08);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .mineral-name{
+    font-size: 13.5px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .mineral-meta{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.05em;
+  }
+
+  /* ====== MAP CONTAINER ====== */
+  .map-container{
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 50%, var(--bg-2) 0%, var(--bg) 100%);
+  }
+  .map-container svg{
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .map-overlay-info{
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    pointer-events: none;
+    max-width: 360px;
+    z-index: 3;
+  }
+  .map-overlay-info .selected-symbol{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(48px, 5.5vw, 80px);
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: -0.04em;
+    opacity: 0.7;
+  }
+  .map-overlay-info .selected-name{
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(22px, 2.2vw, 32px);
+    line-height: 1.1;
+    color: var(--text);
+    margin-top: 6px;
+    letter-spacing: -0.02em;
+  }
+  .map-overlay-info .selected-cat{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-top: 6px;
+  }
+
+  .map-stats{
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    display: flex;
+    gap: 18px;
+    pointer-events: none;
+  }
+  .stat-pill{
+    background: rgba(255, 252, 243, 0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 10px rgba(28, 24, 18, 0.08);
+  }
+  .stat-pill .stat-label{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-faint);
+  }
+  .stat-pill .stat-value{
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  /* SVG styling */
+  .ocean{ fill: var(--ocean); }
+  .sphere{ fill: var(--ocean); stroke: var(--border); stroke-width: 0.5; }
+  .graticule{ fill: none; stroke: var(--graticule); stroke-width: 0.4; stroke-dasharray: 1 3; }
+  .country{ fill: var(--land); stroke: var(--bg); stroke-width: 0.4; transition: fill 0.3s ease; }
+  .country.has-mining{ fill: #e3c0b0; }
+  .country.has-processing{ fill: #e7d294; }
+  .country.has-refining{ fill: #b8d2cb; }
+
+  .arc{
+    fill: none;
+    stroke-width: 1.2;
+    opacity: 0.55;
+    stroke-linecap: round;
+  }
+  .arc.mining-processing{ stroke: var(--mining); }
+  .arc.processing-refining{ stroke: var(--processing); }
+
+  .node circle{
+    cursor: pointer;
+    transition: r 0.2s ease;
+  }
+  .node-mining{ fill: var(--mining); filter: drop-shadow(0 0 4px var(--mining-glow)); }
+  .node-processing{ fill: var(--processing); filter: drop-shadow(0 0 4px var(--processing-glow)); }
+  .node-refining{ fill: var(--refining); filter: drop-shadow(0 0 4px var(--refining-glow)); }
+
+  .node-label{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    fill: var(--text);
+    text-shadow: 0 0 4px var(--bg);
+    pointer-events: none;
+    font-weight: 500;
+  }
+  .node-share{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: var(--text-dim);
+    text-shadow: 0 0 4px var(--bg);
+    pointer-events: none;
+  }
+
+  .tooltip{
+    position: absolute;
+    background: rgba(255, 252, 243, 0.97);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 11px 14px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+    min-width: 200px;
+    max-width: 280px;
+    box-shadow: 0 4px 18px rgba(28, 24, 18, 0.12);
+  }
+  .tt-country-header{
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 8px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: -0.01em;
+  }
+  .tt-rows{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tt-row-main{
+    display: grid;
+    grid-template-columns: 9px 1fr auto;
+    align-items: center;
+    gap: 9px;
+  }
+  .tt-row-dot{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+  .tt-row-dot.mining{ background: var(--mining); }
+  .tt-row-dot.processing{ background: var(--processing); }
+  .tt-row-dot.refining{ background: var(--refining); }
+  .tt-row-label{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .tt-row-share{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .tt-row-note{
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    padding-left: 18px;
+    margin-top: 2px;
+  }
+
+  /* ====== RIGHT PANEL — APPLICATIONS ====== */
+  .info-panel{
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    background: var(--bg-2);
+    padding: 24px 22px 40px 22px;
+  }
+  .info-panel::-webkit-scrollbar{ width: 6px; }
+  .info-panel::-webkit-scrollbar-track{ background: transparent; }
+  .info-panel::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 3px; }
+
+  .info-section{
+    margin-bottom: 28px;
+  }
+  .info-section h3{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+    margin: 0 0 10px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .why-text{
+    font-family: 'Fraunces', serif;
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--text);
+    font-weight: 300;
+    letter-spacing: -0.005em;
+  }
+  .why-text em{
+    color: var(--accent);
+    font-style: italic;
+  }
+  .applications-list{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .applications-list li{
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(31, 39, 64, 0.5);
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .applications-list li:last-child{ border-bottom: none; }
+  .applications-list li::before{
+    content: "→";
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .applications-list .app-title{
+    font-weight: 500;
+    color: var(--text);
+    font-size: 13.5px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .applications-list .app-detail{
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.45;
+  }
+
+  .chain-stage{
+    margin-bottom: 14px;
+  }
+  .chain-stage-header{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .chain-stage-dot{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .chain-stage-dot.mining{ background: var(--mining); }
+  .chain-stage-dot.processing{ background: var(--processing); }
+  .chain-stage-dot.refining{ background: var(--refining); }
+  .chain-stage-label{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .chain-countries{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 16px;
+  }
+  .chain-country{
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 3px 0;
+  }
+  .chain-country-name{ color: var(--text); }
+  .chain-country-share{
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    font-size: 11.5px;
+  }
+
+  .chokepoint{
+    background: rgba(194, 57, 43, 0.07);
+    border: 1px solid rgba(194, 57, 43, 0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+  .chokepoint-label{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mining);
+    margin-bottom: 4px;
+  }
+  .chokepoint-text{
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .empty-state{
+    padding: 60px 30px;
+    text-align: center;
+    color: var(--text-faint);
+  }
+  .empty-state .big{
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .empty-state .small{
+    font-size: 13px;
+    color: var(--text-faint);
+  }
+
+  .footnote{ display: none; }
+
+  /* Zoom controls */
+  .zoom-controls{
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 252, 243, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 4;
+    box-shadow: 0 2px 12px rgba(28, 24, 18, 0.1);
+  }
+  .zoom-btn{
+    width: 38px;
+    height: 38px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+  }
+  .zoom-btn:hover{
+    background: rgba(110, 46, 58, 0.08);
+    color: var(--accent);
+  }
+  .zoom-btn + .zoom-btn{ border-top: 1px solid var(--border); }
+  .zoom-btn.reset{ font-size: 14px; }
+
+  /* Non-scaling strokes — keep lines crisp at all zoom levels */
+  .sphere, .country, .graticule, .arc{ vector-effect: non-scaling-stroke; }
+
+  /* SVG cursors for pan */
+  .map-container svg{ cursor: grab; }
+  .map-container svg:active{ cursor: grabbing; }
+  .map-container .node circle{ cursor: pointer; }
+
+  /* Methodology trigger + modal */
+  .methodology-btn{
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .methodology-btn:hover{
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(110, 46, 58, 0.05);
+  }
+  .methodology-btn .arrow{
+    transition: transform 0.2s;
+  }
+  .methodology-btn:hover .arrow{
+    transform: translateX(2px);
+  }
+  .header-right{
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .modal-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 24, 18, 0.45);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 200;
+    padding: 60px 24px 24px 24px;
+    overflow-y: auto;
+  }
+  .modal-backdrop.open{ display: flex; }
+  .modal{
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    max-width: 640px;
+    width: 100%;
+    padding: 40px clamp(24px, 5vw, 44px) 32px;
+    box-shadow: 0 20px 60px rgba(28, 24, 18, 0.3);
+    position: relative;
+    margin-bottom: 60px;
+  }
+  .modal-close{
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    color: var(--text-dim);
+    cursor: pointer;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    line-height: 1;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+  }
+  .modal-close:hover{
+    background: rgba(110, 46, 58, 0.08);
+    color: var(--accent);
+  }
+  .modal-eyebrow{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .modal-title{
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 30px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 24px 0;
+    color: var(--text);
+  }
+  .modal-title em{
+    font-style: italic;
+    color: var(--accent);
+  }
+  .modal-section{
+    margin-bottom: 28px;
+  }
+  .modal-section h3{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+  .modal-section p{
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text);
+    margin: 0 0 12px 0;
+  }
+  .modal-section p:last-child{ margin-bottom: 0; }
+  .modal-section ul.caveats{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .modal-section ul.caveats li{
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text);
+    padding: 8px 0 8px 20px;
+    position: relative;
+  }
+  .modal-section ul.caveats li::before{
+    content: "·";
+    position: absolute;
+    left: 6px;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.1;
+  }
+  .source-list{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .source-list li{
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(214, 200, 168, 0.4);
+  }
+  .source-list li:last-child{ border-bottom: none; padding-bottom: 0; }
+  .source-list a{
+    font-family: 'Fraunces', serif;
+    font-size: 15.5px;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 400;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 1px;
+    transition: color 0.15s;
+  }
+  .source-list a:hover{ color: var(--accent); }
+  .source-list .src-detail{
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    line-height: 1.55;
+  }
+  .modal-footer{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-faint);
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  /* Loading state */
+  .loading{
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* responsive */
+  @media (max-width: 1200px){
+    .brand .tag{ display: none; }
+  }
+  @media (max-width: 900px){
+    .app{
+      grid-template-columns: 1fr;
+      grid-template-rows: 64px minmax(220px, auto) 1fr minmax(260px, auto);
+    }
+    .sidebar{
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      max-height: 240px;
+    }
+    .info-panel{
+      border-left: none;
+      border-top: 1px solid var(--border);
+      max-height: 320px;
+    }
+    .methodology-btn{ padding: 6px 10px; font-size: 9px; }
+    .header-right{ gap: 16px; }
+    .legend{ gap: 16px; }
+    .legend-item{ font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <div class="mark">The Material <em>Substrate</em> of AI</div>
+      <div class="tag">Critical Minerals & REE Supply Chain · 2024–2026</div>
+    </div>
+    <div class="header-right">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot mining"></div>Mining</div>
+        <div class="legend-item"><div class="legend-dot processing"></div>Processing</div>
+        <div class="legend-item"><div class="legend-dot refining"></div>Refining</div>
+      </div>
+      <button class="methodology-btn" id="open-methodology">
+        Sources & Methodology
+        <span class="arrow">→</span>
+      </button>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <div class="filter-box">
+      <input type="text" id="search" placeholder="Search a mineral or element…" />
+    </div>
+    <div id="mineral-list"></div>
+  </aside>
+
+  <main class="map-container">
+    <div class="loading" id="loading">Loading world geometry…</div>
+    <svg id="map"></svg>
+    <div class="map-overlay-info" id="overlay">
+      <div class="selected-symbol" id="sel-sym"></div>
+      <div class="selected-name" id="sel-name"></div>
+      <div class="selected-cat" id="sel-cat"></div>
+    </div>
+    <div class="map-stats" id="map-stats"></div>
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="zoom-in" title="Zoom in" aria-label="Zoom in">＋</button>
+      <button class="zoom-btn" id="zoom-out" title="Zoom out" aria-label="Zoom out">−</button>
+      <button class="zoom-btn reset" id="zoom-reset" title="Reset view" aria-label="Reset view">↺</button>
+    </div>
+    <div class="tooltip" id="tooltip"></div>
+  </main>
+
+  <aside class="info-panel" id="info-panel">
+    <div class="empty-state">
+      <div class="big">Select a mineral.</div>
+      <div class="small">Choose any element from the left to trace its journey from earth to chip.</div>
+    </div>
+  </aside>
+
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+    <div class="modal-eyebrow">About this visualization</div>
+    <h2 id="modal-title" class="modal-title">Sources <em>& methodology</em></h2>
+
+    <div class="modal-section">
+      <h3>Approach</h3>
+      <p>This atlas traces 18 critical minerals and rare earth elements across three stages of their supply chains — <strong>mining</strong> (raw extraction), <strong>processing</strong> (concentration and chemical conversion), and <strong>refining</strong> (production of the final purified form used in chips, magnets, or batteries) — for materials that the AI industry materially depends on, whether for the silicon itself, the data centers that house it, or the power and storage systems that feed it.</p>
+      <p>Country shares are approximate global percentages drawn from public 2024–2025 production data. They should be read as orders of magnitude, not precise figures: sources disagree by a few percentage points on individual countries, undocumented production (particularly Myanmar rare earths and artisanal mining in the DRC) does not always appear in official statistics, and for some commodities the "processing" and "refining" stages are functionally fused within a single industrial complex.</p>
+    </div>
+
+    <div class="modal-section">
+      <h3>Caveats worth knowing</h3>
+      <ul class="caveats">
+        <li>Many of these minerals are dual-use. Silicon production is dominated by solar, copper by general electrification, lithium by EVs. Shares reflect total global production rather than the AI-specific slice.</li>
+        <li>Rare-earth aggregates, where cited, refer to the four magnet REEs — neodymium, praseodymium, dysprosium, and terbium — the IEA's standard reporting category.</li>
+        <li>For silicon, "refining" here means semiconductor wafer fabrication (TSMC, Samsung, SK Hynix). Polysilicon production sits under "processing."</li>
+        <li>Refining shares for cobalt, nickel, and lithium reflect battery-grade chemicals (sulfates and hydroxides), not refined metal.</li>
+        <li>Hafnium figures are estimated — the commercial market is small and reporting is sparse.</li>
+        <li>Selection of which minerals qualify as "AI-critical" is editorial. The threshold was "plays a non-trivial role in building, powering, cooling, storing, or interconnecting AI compute."</li>
+      </ul>
+    </div>
+
+    <div class="modal-section">
+      <h3>Primary sources</h3>
+      <ul class="source-list">
+        <li>
+          <a href="https://pubs.usgs.gov/periodicals/mcs2025/" target="_blank" rel="noopener">U.S. Geological Survey — Mineral Commodity Summaries 2025</a>
+          <span class="src-detail">Annual reference for global production, reserves, and trade flows of critical mineral commodities.</span>
+        </li>
+        <li>
+          <a href="https://www.iea.org/reports/global-critical-minerals-outlook-2025" target="_blank" rel="noopener">IEA — Global Critical Minerals Outlook 2025</a>
+          <span class="src-detail">Supply concentration analysis and export-control tracking, including the December 2024 Chinese restrictions on gallium, germanium, and antimony.</span>
+        </li>
+        <li>
+          <a href="https://www.iea.org/reports/rare-earth-elements" target="_blank" rel="noopener">IEA — Rare Earth Elements (2025)</a>
+          <span class="src-detail">Mining, refining, and magnet-manufacturing breakdowns for the magnet REE group; tracks the April and October 2025 Chinese heavy-REE export controls.</span>
+        </li>
+        <li>
+          <a href="https://www.csis.org/analysis/developing-rare-earth-processing-hubs-analytical-approach" target="_blank" rel="noopener">CSIS — Developing Rare Earth Processing Hubs (July 2025)</a>
+          <span class="src-detail">Coverage of non-Chinese refining buildout: Lynas Malaysia, Iluka Eneabba, Arafura Nolans, Solvay La Rochelle.</span>
+        </li>
+        <li>
+          <a href="https://www.cobaltinstitute.org/" target="_blank" rel="noopener">Cobalt Institute — Cobalt Market Report 2024 (May 2025)</a>
+          <span class="src-detail">DRC and Indonesian mining splits and Chinese refining concentration; HPAL ramp-up data.</span>
+        </li>
+        <li>
+          <a href="https://www.bernreuter.com/" target="_blank" rel="noopener">Bernreuter Research — Polysilicon Market Outlook 2029</a>
+          <span class="src-detail">2024 polysilicon production rankings; cited the 93.5% Chinese share and Wacker's standing as the lone non-Chinese top-10 producer.</span>
+        </li>
+        <li>
+          <a href="https://elements.visualcapitalist.com/" target="_blank" rel="noopener">Visual Capitalist — Elements</a>
+          <span class="src-detail">Aggregated supply-chain visualizations cross-referencing USGS, IEA, World Economic Forum, and Wood Mackenzie figures.</span>
+        </li>
+        <li>
+          <a href="https://www.mining-technology.com/" target="_blank" rel="noopener">Mining Technology</a>
+          <span class="src-detail">Operator-level reporting on individual mines: Tenke Fungurume, Kisanfu, Mt Weld, Mountain Pass, Las Bambas.</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="modal-footer">Compiled May 2026 · figures reflect 2024–2025 reporting cycles</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   MINERAL & SUPPLY CHAIN DATA
+   shares are approximate 2024–2025 global percentages
+   Sources: USGS Mineral Commodity Summaries 2025, IEA Critical
+   Minerals Outlook 2025, CSIS, Visual Capitalist, Bernreuter,
+   Cobalt Institute, Mining Technology, Statista, IEA REE report
+   ============================================================ */
+
+const COORDS = {
+  China:       [104.19, 35.86],
+  USA:         [-98.58, 39.83],
+  Australia:   [133.78, -25.27],
+  DRC:         [21.76,  -4.04],
+  Chile:       [-71.54, -35.68],
+  Brazil:      [-51.93, -14.24],
+  Russia:      [105.32, 61.52],
+  Canada:      [-106.35, 56.13],
+  Indonesia:   [113.92,  -0.79],
+  Peru:        [-75.02,  -9.19],
+  Mexico:      [-102.55, 23.63],
+  "South Africa":[22.94, -30.56],
+  Myanmar:     [95.96, 21.91],
+  India:       [78.96, 20.59],
+  Japan:       [138.25, 36.20],
+  "South Korea":[127.77, 35.91],
+  Belgium:     [4.47, 50.50],
+  Germany:     [10.45, 51.17],
+  France:      [2.21, 46.23],
+  Norway:      [8.47, 60.47],
+  Estonia:     [25.01, 58.60],
+  Vietnam:     [108.28, 14.06],
+  Malaysia:    [103.40, 3.78],   // Kuantan Lynas plant
+  Argentina:   [-63.62, -38.42],
+  Bolivia:     [-63.59, -16.29],
+  Philippines: [121.77, 12.88],
+  "New Caledonia":[165.62, -20.90],
+  Kazakhstan:  [66.92, 48.02],
+  Mongolia:    [103.85, 46.86],
+  Zimbabwe:    [29.15, -19.02],
+  Rwanda:      [29.87,  -1.94],
+  Zambia:      [27.85, -13.13],
+  Austria:     [14.55, 47.52],
+  Finland:     [25.75, 61.92],
+  Taiwan:      [121.00, 23.70],
+  Poland:      [19.15, 51.92],
+  Iceland:     [-19.02, 64.96],
+  UK:          [-3.44, 55.38],
+  Switzerland: [8.23, 46.82],
+  Nigeria:     [8.68,   9.08],
+  Tanzania:    [34.89,  -6.37],
+  Madagascar:  [46.87, -18.77],
+  Greenland:   [-42.60, 71.71],
+  Mozambique:  [35.53, -18.67],
+  Ukraine:     [31.16, 48.38],
+  Turkey:      [35.24, 38.96],
+  Ethiopia:    [40.49,  9.15],
+  Ghana:       [-1.02,  7.95]
+};
+
+const MINERALS = [
+  /* ===== SEMICONDUCTOR SUBSTRATE & DOPING ===== */
+  {
+    id: "silicon",
+    symbol: "Si",
+    name: "Silicon",
+    category: "Chip & Wafer",
+    why: "The foundational material of every logic and memory chip in an AI accelerator. Wafer-grade polysilicon must be 99.999999999% pure — '11N' purity — for advanced nodes.",
+    applications: [
+      { title: "Wafers for AI accelerators", detail: "Substrate for every GPU, TPU, and HBM die manufactured by TSMC, Samsung, Intel, and SK Hynix." },
+      { title: "Power conversion modules", detail: "Silicon MOSFETs and IGBTs in data center power supplies and uninterruptible power systems." },
+      { title: "MEMS sensors", detail: "Accelerometers, gyroscopes, and pressure sensors that monitor data center cooling and seismic activity." },
+      { title: "Photovoltaics", detail: "Solar cells powering the new generation of clean-energy AI data centers." }
+    ],
+    chokepoint: "China refines 93.5% of global polysilicon. Only Wacker (Germany) and Hemlock (US) produce semiconductor-grade polysilicon at scale outside Asia.",
+    mining: [
+      { country: "China", share: 80, note: "Silicon metal & ferrosilicon" },
+      { country: "Russia", share: 5 },
+      { country: "Brazil", share: 4 },
+      { country: "Norway", share: 3 },
+      { country: "USA", share: 3 }
+    ],
+    processing: [
+      { country: "China", share: 94, note: "Polysilicon refining" },
+      { country: "Germany", share: 2, note: "Wacker Chemie" },
+      { country: "USA", share: 2, note: "Hemlock Semiconductor" },
+      { country: "Malaysia", share: 1, note: "Tokuyama" }
+    ],
+    refining: [
+      { country: "Taiwan", share: 60, note: "Wafer fabrication (TSMC)" },
+      { country: "South Korea", share: 18, note: "Samsung, SK Hynix" },
+      { country: "Japan", share: 12, note: "SUMCO, Shin-Etsu" },
+      { country: "USA", share: 5 },
+      { country: "China", share: 3 }
+    ]
+  },
+  {
+    id: "gallium",
+    symbol: "Ga",
+    name: "Gallium",
+    category: "Chip & Wafer",
+    why: "The backbone of compound semiconductors. GaN powers efficient data center voltage conversion; GaAs drives RF and optical interconnects between AI training pods.",
+    applications: [
+      { title: "GaN power converters", detail: "High-efficiency switching in AI server PSUs; cuts data center electricity loss versus silicon." },
+      { title: "GaAs RF chips", detail: "5G base stations, radar, and high-speed optical transceivers linking GPUs across racks." },
+      { title: "Laser diodes", detail: "VCSELs and edge-emitting lasers used in datacom optical I/O and LiDAR." },
+      { title: "LEDs", detail: "Indicator and illumination LEDs throughout server infrastructure." }
+    ],
+    chokepoint: "China controls 99% of refined gallium production. In December 2024 China banned gallium exports to the United States.",
+    mining: [
+      { country: "China", share: 98, note: "Byproduct of bauxite/alumina" },
+      { country: "Russia", share: 1 },
+      { country: "Japan", share: 0.5 }
+    ],
+    processing: [
+      { country: "China", share: 99, note: "Primary low-purity Ga" },
+      { country: "Russia", share: 0.5 },
+      { country: "South Korea", share: 0.3 },
+      { country: "Japan", share: 0.2 }
+    ],
+    refining: [
+      { country: "China", share: 80, note: "High-purity GaN/GaAs wafers" },
+      { country: "Japan", share: 8, note: "Sumitomo Electric" },
+      { country: "Germany", share: 5, note: "Freiberger Compound Materials" },
+      { country: "USA", share: 4 },
+      { country: "Taiwan", share: 3 }
+    ]
+  },
+  {
+    id: "germanium",
+    symbol: "Ge",
+    name: "Germanium",
+    category: "Chip & Wafer",
+    why: "Enables SiGe heterojunction transistors in high-speed networking ASICs, and is irreplaceable in fiber-optic transceivers carrying AI training data between facilities.",
+    applications: [
+      { title: "Fiber-optic networks", detail: "Germanium-doped silica is the core of optical fiber connecting hyperscale data centers." },
+      { title: "SiGe high-speed transistors", detail: "RF and mixed-signal chips in 400G/800G data center switches." },
+      { title: "Infrared optics", detail: "Thermal imaging cameras used to monitor server hotspots and cooling." },
+      { title: "Photodetectors", detail: "Receivers in optical data links between AI training clusters." }
+    ],
+    chokepoint: "China produces ~68% of refined germanium. Banned exports to the US in December 2024. Belgium (Umicore) is the largest non-Chinese refiner.",
+    mining: [
+      { country: "China", share: 68, note: "Zinc/coal-ash byproduct" },
+      { country: "Russia", share: 5 },
+      { country: "USA", share: 3 },
+      { country: "Canada", share: 2 }
+    ],
+    processing: [
+      { country: "China", share: 60 },
+      { country: "Belgium", share: 15, note: "Umicore, Olen" },
+      { country: "Russia", share: 8 },
+      { country: "Canada", share: 5, note: "5N Plus" },
+      { country: "Germany", share: 5 },
+      { country: "USA", share: 5 }
+    ],
+    refining: [
+      { country: "China", share: 55 },
+      { country: "Belgium", share: 18, note: "High-purity GeO₂" },
+      { country: "Canada", share: 8 },
+      { country: "USA", share: 7 },
+      { country: "Germany", share: 6 }
+    ]
+  },
+  {
+    id: "indium",
+    symbol: "In",
+    name: "Indium",
+    category: "Chip & Wafer",
+    why: "Used in ITO transparent conductors (touchscreens, displays) and InP semiconductors that drive coherent optical transceivers — the high-bandwidth links between AI training nodes.",
+    applications: [
+      { title: "InP photonics", detail: "Indium phosphide chips for coherent optics moving terabits between training clusters." },
+      { title: "ITO transparent electrodes", detail: "OLED displays and touchscreens on server-room control panels." },
+      { title: "Low-temp solders", detail: "Indium-based solders for bonding heat-sensitive chip packages." },
+      { title: "Thermal interface materials", detail: "Indium foil between AI chips and heatsinks for superior heat transfer." }
+    ],
+    chokepoint: "China imposed export licensing on indium in 2025. ~58% of global indium refining sits in China.",
+    mining: [
+      { country: "China", share: 58, note: "Zinc smelter byproduct" },
+      { country: "South Korea", share: 14 },
+      { country: "Japan", share: 9 },
+      { country: "Canada", share: 7 },
+      { country: "Peru", share: 4 }
+    ],
+    processing: [
+      { country: "China", share: 50 },
+      { country: "South Korea", share: 18 },
+      { country: "Japan", share: 12 },
+      { country: "Canada", share: 8 }
+    ],
+    refining: [
+      { country: "China", share: 55, note: "Refined indium ingots & ITO" },
+      { country: "South Korea", share: 18 },
+      { country: "Japan", share: 14 },
+      { country: "Belgium", share: 5 }
+    ]
+  },
+  {
+    id: "hafnium",
+    symbol: "Hf",
+    name: "Hafnium",
+    category: "Chip & Wafer",
+    why: "Hafnium oxide is the high-k gate dielectric that made modern sub-22nm chips physically possible. Every advanced AI accelerator since 2007 depends on Hf-based gate stacks.",
+    applications: [
+      { title: "High-k gate dielectric", detail: "HfO₂ gate oxide in FinFET and GAA transistors at TSMC N3/N2 and Samsung 3nm." },
+      { title: "Capacitor dielectrics", detail: "Used in DRAM and emerging memory technologies." },
+      { title: "Superalloys", detail: "Turbine blades in datacenter gas generators for backup power." },
+      { title: "Plasma cutting", detail: "Electrodes used in semiconductor fab tooling." }
+    ],
+    chokepoint: "France (Framatome) and the US dominate nuclear-grade hafnium separation. Derived from zirconium processing — supply is structurally tiny.",
+    mining: [
+      { country: "Australia", share: 40, note: "From zircon sands" },
+      { country: "South Africa", share: 25 },
+      { country: "Mozambique", share: 12 },
+      { country: "China", share: 10 },
+      { country: "USA", share: 6 }
+    ],
+    processing: [
+      { country: "France", share: 45, note: "Framatome Jarrie" },
+      { country: "USA", share: 30, note: "Westinghouse, ATI" },
+      { country: "Russia", share: 15 },
+      { country: "China", share: 8 }
+    ],
+    refining: [
+      { country: "France", share: 40, note: "Nuclear-grade Hf metal" },
+      { country: "USA", share: 35 },
+      { country: "Russia", share: 15 },
+      { country: "China", share: 8 }
+    ]
+  },
+  {
+    id: "fluorspar",
+    symbol: "F",
+    name: "Fluorspar",
+    category: "Chip & Wafer",
+    why: "Source of hydrofluoric acid (HF) — the chemical that etches every silicon wafer. No fluorspar means no chips, period.",
+    applications: [
+      { title: "Wafer etching (HF)", detail: "Hydrofluoric acid is used at dozens of steps in every fab process flow." },
+      { title: "Photolithography solvents", detail: "Fluorinated chemicals critical to EUV mask production." },
+      { title: "Refrigerants", detail: "Fluorocarbons used in chiller systems cooling AI data centers." },
+      { title: "Aluminum smelting flux", detail: "Used to produce aluminum heat sinks and chassis." }
+    ],
+    chokepoint: "China supplies ~63% of global fluorspar and dominates refined HF capacity. US is 100% import-reliant for fluorspar.",
+    mining: [
+      { country: "China", share: 63 },
+      { country: "Mexico", share: 14 },
+      { country: "Mongolia", share: 12 },
+      { country: "South Africa", share: 4 },
+      { country: "Vietnam", share: 3 }
+    ],
+    processing: [
+      { country: "China", share: 70, note: "Acid-grade fluorspar" },
+      { country: "Mexico", share: 12 },
+      { country: "Mongolia", share: 8 }
+    ],
+    refining: [
+      { country: "China", share: 65, note: "Anhydrous HF production" },
+      { country: "Mexico", share: 12 },
+      { country: "Germany", share: 5 },
+      { country: "Japan", share: 5 },
+      { country: "USA", share: 5 }
+    ]
+  },
+  {
+    id: "boron",
+    symbol: "B",
+    name: "Boron",
+    category: "Chip & Wafer",
+    why: "The standard p-type dopant in CMOS silicon — every transistor in every AI chip has boron implants. Also the 'B' in NdFeB permanent magnets that drive server fans, HDD voice coils, and cooling motors.",
+    applications: [
+      { title: "Silicon p-type dopant", detail: "Standard implant for forming p-type regions in CMOS — present in every transistor of every AI chip." },
+      { title: "BPSG dielectric", detail: "Borophosphosilicate glass as interlayer dielectric in chip back-end-of-line metal stacks." },
+      { title: "NdFeB magnets", detail: "The 'B' in neodymium-iron-boron magnets — server fans, HDD voice coils, BLDC motors." },
+      { title: "Borosilicate glass", detail: "Heat-resistant glass in chip packaging substrates and photomask blanks." }
+    ],
+    chokepoint: "Turkey's state-owned Eti Maden controls ~65% of mined boron; Rio Tinto's Boron, California operation provides most of the rest. While less extreme than China's grip on gallium, the two-country concentration leaves limited alternatives.",
+    mining: [
+      { country: "Turkey", share: 65, note: "Eti Maden (state-owned)" },
+      { country: "USA", share: 12, note: "Rio Tinto, Boron CA" },
+      { country: "Chile", share: 7 },
+      { country: "Argentina", share: 4 },
+      { country: "China", share: 4 },
+      { country: "Russia", share: 3 }
+    ],
+    processing: [
+      { country: "Turkey", share: 58, note: "Boric acid, borax" },
+      { country: "USA", share: 15 },
+      { country: "China", share: 10 },
+      { country: "Chile", share: 6 },
+      { country: "Russia", share: 4 }
+    ],
+    refining: [
+      { country: "Turkey", share: 50, note: "Refined boron compounds" },
+      { country: "USA", share: 18 },
+      { country: "China", share: 14, note: "Elemental boron for magnets" },
+      { country: "Russia", share: 5 },
+      { country: "Japan", share: 4 }
+    ]
+  },
+
+  /* ===== POWER, INTERCONNECT & PACKAGING ===== */
+  {
+    id: "copper",
+    symbol: "Cu",
+    name: "Copper",
+    category: "Power & Interconnect",
+    why: "The metal of electrification. Power cables to data centers, busbars in racks, on-chip damascene interconnects, and motor windings in cooling fans — all copper.",
+    applications: [
+      { title: "Data center power cabling", detail: "MV/LV cables delivering megawatts to AI training clusters." },
+      { title: "On-chip interconnect", detail: "Damascene copper traces inside every modern CPU/GPU since the late 1990s." },
+      { title: "Server PCB & busbars", detail: "Backplanes and copper busbars distributing power within racks." },
+      { title: "Heat exchangers", detail: "Liquid-cooling cold plates and heat pipes for AI chips." }
+    ],
+    chokepoint: "Mining is geographically distributed; refining is more concentrated in China (~45%). The IEA warns of structural copper deficits as AI/electrification demand surges.",
+    mining: [
+      { country: "Chile", share: 23 },
+      { country: "DRC", share: 14 },
+      { country: "Peru", share: 12 },
+      { country: "China", share: 8 },
+      { country: "USA", share: 5 },
+      { country: "Australia", share: 4 },
+      { country: "Zambia", share: 4 },
+      { country: "Russia", share: 4 }
+    ],
+    processing: [
+      { country: "China", share: 45, note: "Smelting capacity" },
+      { country: "Chile", share: 9 },
+      { country: "Japan", share: 7 },
+      { country: "DRC", share: 6 },
+      { country: "Russia", share: 4 }
+    ],
+    refining: [
+      { country: "China", share: 45, note: "Refined cathode copper" },
+      { country: "Chile", share: 9 },
+      { country: "Japan", share: 6 },
+      { country: "Russia", share: 4 },
+      { country: "India", share: 3 },
+      { country: "USA", share: 3 }
+    ]
+  },
+  {
+    id: "tungsten",
+    symbol: "W",
+    name: "Tungsten",
+    category: "Power & Interconnect",
+    why: "Used for vertical interconnects (vias and contacts) inside chips, and for wear-resistant tooling that machines semiconductor equipment.",
+    applications: [
+      { title: "Via & contact plugs", detail: "Tungsten fills the vertical connections between metal layers in every advanced chip." },
+      { title: "X-ray targets", detail: "EUV lithography tooling and inspection." },
+      { title: "Carbide cutting tools", detail: "Precision machining of fab equipment and chip packaging." },
+      { title: "Heat sinks (W-Cu composites)", detail: "High-power AI chip thermal management." }
+    ],
+    chokepoint: "China produces ~80% of mined tungsten and >85% of refined output. Imposed export licensing in early 2025.",
+    mining: [
+      { country: "China", share: 80 },
+      { country: "Vietnam", share: 5 },
+      { country: "Russia", share: 3 },
+      { country: "Mongolia", share: 2 },
+      { country: "Australia", share: 2 },
+      { country: "Bolivia", share: 2 }
+    ],
+    processing: [
+      { country: "China", share: 85, note: "APT / tungsten oxide" },
+      { country: "Vietnam", share: 6 },
+      { country: "Austria", share: 3 },
+      { country: "Germany", share: 2 }
+    ],
+    refining: [
+      { country: "China", share: 80 },
+      { country: "Austria", share: 5, note: "Wolfram Bergbau" },
+      { country: "Germany", share: 4 },
+      { country: "USA", share: 3 }
+    ]
+  },
+  {
+    id: "tantalum",
+    symbol: "Ta",
+    name: "Tantalum",
+    category: "Power & Interconnect",
+    why: "Tantalum capacitors stabilize voltage in every AI server. Tantalum nitride is also a diffusion barrier in advanced copper interconnects.",
+    applications: [
+      { title: "Tantalum capacitors", detail: "Compact, stable capacitors on every server motherboard near the CPU/GPU." },
+      { title: "TaN diffusion barriers", detail: "Prevents copper from migrating into silicon in damascene interconnects." },
+      { title: "Sputtering targets", detail: "Used in chip fabrication PVD processes." },
+      { title: "Aerospace superalloys", detail: "Turbine engines including backup generation." }
+    ],
+    chokepoint: "DRC and Rwanda mine ~60% of tantalum. Refining is split between US (KEMET), Germany, Japan, and China.",
+    mining: [
+      { country: "DRC", share: 41 },
+      { country: "Rwanda", share: 20 },
+      { country: "Brazil", share: 12 },
+      { country: "Nigeria", share: 8 },
+      { country: "China", share: 6 },
+      { country: "Ethiopia", share: 4 }
+    ],
+    processing: [
+      { country: "USA", share: 25 },
+      { country: "Germany", share: 20, note: "H.C. Starck" },
+      { country: "China", share: 18 },
+      { country: "Japan", share: 15 },
+      { country: "Kazakhstan", share: 10, note: "Ulba Metallurgical" }
+    ],
+    refining: [
+      { country: "USA", share: 28, note: "Capacitor-grade Ta powder" },
+      { country: "Germany", share: 22 },
+      { country: "Japan", share: 18 },
+      { country: "China", share: 18 },
+      { country: "Kazakhstan", share: 8 }
+    ]
+  },
+  {
+    id: "gold",
+    symbol: "Au",
+    name: "Gold",
+    category: "Power & Interconnect",
+    why: "Microscopic gold wires bond every chip die to its package. Plated gold protects electrical contacts in servers from corrosion.",
+    applications: [
+      { title: "Wire bonding", detail: "25-µm gold wires connect AI chip dies to their package leads." },
+      { title: "Connector plating", detail: "Gold-plated edge connectors and pins on every server module." },
+      { title: "Bump bonding (flip chip)", detail: "Gold microbumps in advanced packaging like CoWoS for AI accelerators." },
+      { title: "Reflective coatings", detail: "Gold mirrors in EUV photolithography optics." }
+    ],
+    chokepoint: "Mining is the most diversified of any AI mineral. Refining concentrates in Switzerland, South Africa, and the US.",
+    mining: [
+      { country: "China", share: 10 },
+      { country: "Russia", share: 10 },
+      { country: "Australia", share: 9 },
+      { country: "Canada", share: 6 },
+      { country: "USA", share: 5 },
+      { country: "Ghana", share: 4 },
+      { country: "Peru", share: 3 },
+      { country: "Mexico", share: 3 },
+      { country: "South Africa", share: 3 }
+    ],
+    processing: [
+      { country: "Switzerland", share: 40, note: "PAMP, MKS, Valcambi, Argor" },
+      { country: "South Africa", share: 12, note: "Rand Refinery" },
+      { country: "USA", share: 8 },
+      { country: "Australia", share: 7, note: "Perth Mint" },
+      { country: "UK", share: 6 }
+    ],
+    refining: [
+      { country: "Switzerland", share: 40 },
+      { country: "South Africa", share: 12 },
+      { country: "USA", share: 10 },
+      { country: "China", share: 9 },
+      { country: "Japan", share: 7 }
+    ]
+  },
+  {
+    id: "palladium",
+    symbol: "Pd",
+    name: "Palladium",
+    category: "Power & Interconnect",
+    why: "The workhorse metal in multilayer ceramic capacitors (MLCCs) — thousands of which sit on every AI server board. Also used for wire bonding and as a catalyst in semiconductor precursor chemistry.",
+    applications: [
+      { title: "MLCC electrodes", detail: "Pd and Pd-Ag inner electrodes in the ceramic capacitors covering every AI server board." },
+      { title: "Wire bonding", detail: "Pd-coated copper bonding wire — a cost alternative to gold in chip packages." },
+      { title: "Connector plating", detail: "Pd-Ni plating on high-reliability connectors for repeated mate/unmate cycles." },
+      { title: "Semiconductor catalysis", detail: "Catalyst in precursor chemistry and select CVD processes inside chip fabs." }
+    ],
+    chokepoint: "Russia (Nornickel) and South Africa's Bushveld Complex together produce ~70% of mined palladium. Russia sanctions risk and Bushveld labor instability are both live concerns for AI server supply chains.",
+    mining: [
+      { country: "Russia", share: 37, note: "Nornickel, Norilsk" },
+      { country: "South Africa", share: 34, note: "Bushveld Complex" },
+      { country: "Canada", share: 8, note: "Sudbury PGM byproduct" },
+      { country: "USA", share: 7, note: "Stillwater, Montana" },
+      { country: "Zimbabwe", share: 7, note: "Great Dyke" }
+    ],
+    processing: [
+      { country: "Russia", share: 35 },
+      { country: "South Africa", share: 33, note: "Anglo, Sibanye-Stillwater" },
+      { country: "UK", share: 8, note: "Johnson Matthey" },
+      { country: "Switzerland", share: 6, note: "Argor-Heraeus, Valcambi" },
+      { country: "USA", share: 6 },
+      { country: "Japan", share: 5, note: "Tanaka" }
+    ],
+    refining: [
+      { country: "Russia", share: 33 },
+      { country: "South Africa", share: 30 },
+      { country: "UK", share: 10, note: "Johnson Matthey Royston" },
+      { country: "Switzerland", share: 8 },
+      { country: "USA", share: 7 },
+      { country: "Japan", share: 6 },
+      { country: "Germany", share: 4, note: "Heraeus" }
+    ]
+  },
+
+  /* ===== MAGNETS & RARE EARTHS ===== */
+  {
+    id: "neodymium",
+    symbol: "Nd",
+    name: "Neodymium",
+    category: "Magnets & REEs",
+    why: "The 'N' in NdFeB — the most powerful commercial permanent magnets. Drives every server cooling fan, disk drive, and many actuators in robotic AI infrastructure.",
+    applications: [
+      { title: "Server cooling fan magnets", detail: "High-efficiency BLDC motor magnets in data center HVAC and rack fans." },
+      { title: "HDD voice coil motors", detail: "NdFeB magnets position the read/write heads on every spinning hard drive." },
+      { title: "Robotic actuators", detail: "Precision servos in data center automation and humanoid robotics." },
+      { title: "Generator magnets", detail: "Wind turbines feeding renewable power to AI facilities." }
+    ],
+    chokepoint: "China refines 91% of all magnet rare earths and produces 94% of sintered NdFeB magnets. Imposed escalating export controls in Apr & Oct 2025.",
+    mining: [
+      { country: "China", share: 60 },
+      { country: "USA", share: 15, note: "Mountain Pass, CA" },
+      { country: "Myanmar", share: 8, note: "Often illegal, flows to China" },
+      { country: "Australia", share: 7, note: "Mt Weld, Lynas" },
+      { country: "India", share: 2 },
+      { country: "Russia", share: 1 }
+    ],
+    processing: [
+      { country: "China", share: 91, note: "Separation & oxide refining" },
+      { country: "Malaysia", share: 5, note: "Lynas, Kuantan" },
+      { country: "Estonia", share: 1, note: "Neo Performance Materials" },
+      { country: "France", share: 1, note: "Solvay La Rochelle" }
+    ],
+    refining: [
+      { country: "China", share: 94, note: "NdFeB sintered magnets" },
+      { country: "Japan", share: 3, note: "Shin-Etsu, TDK" },
+      { country: "Germany", share: 1 },
+      { country: "USA", share: 1 }
+    ]
+  },
+  {
+    id: "praseodymium",
+    symbol: "Pr",
+    name: "Praseodymium",
+    category: "Magnets & REEs",
+    why: "Paired with neodymium in nearly all high-grade NdFeB magnets. Improves coercivity and corrosion resistance in magnets used across AI data center hardware.",
+    applications: [
+      { title: "NdPr magnets", detail: "Pr partially substitutes for Nd in magnets — same uses: motors, fans, HDDs." },
+      { title: "Optical fiber amplifiers", detail: "Pr-doped fiber amplifiers in 1.3-µm telecom bands." },
+      { title: "Aircraft engine alloys", detail: "Used in turbines, including data center backup power." },
+      { title: "Pigments & ceramics", detail: "Yellow ceramic pigments and welding goggles." }
+    ],
+    chokepoint: "Same as neodymium — China refines ~91% of magnet rare earths.",
+    mining: [
+      { country: "China", share: 60 },
+      { country: "USA", share: 15 },
+      { country: "Australia", share: 8 },
+      { country: "Myanmar", share: 7 },
+      { country: "India", share: 2 }
+    ],
+    processing: [
+      { country: "China", share: 90 },
+      { country: "Malaysia", share: 6, note: "Lynas" },
+      { country: "Estonia", share: 1 },
+      { country: "France", share: 1 }
+    ],
+    refining: [
+      { country: "China", share: 92 },
+      { country: "Japan", share: 4 },
+      { country: "Malaysia", share: 2 }
+    ]
+  },
+  {
+    id: "dysprosium",
+    symbol: "Dy",
+    name: "Dysprosium",
+    category: "Magnets & REEs",
+    why: "Heavy rare earth added to NdFeB magnets so they retain magnetism at high operating temperatures — exactly the condition inside packed AI servers and EV motors.",
+    applications: [
+      { title: "High-temp magnet doping", detail: "Allows NdFeB magnets to operate above 150°C in motors and servers without demagnetizing." },
+      { title: "Magnetostrictive materials", detail: "Terfenol-D for precision actuators and sonar." },
+      { title: "Nuclear reactor control rods", detail: "Neutron absorber for backup nuclear power." },
+      { title: "Laser materials", detail: "Dy-doped fiber lasers in industrial cutting." }
+    ],
+    chokepoint: "Almost all heavy rare earth refining happens in China (and Myanmar feeding China). Lynas (Malaysia) became the first non-Chinese commercial Dy oxide producer in May 2025.",
+    mining: [
+      { country: "China", share: 65, note: "Ionic clay deposits, south China" },
+      { country: "Myanmar", share: 25, note: "Flows mostly into China" },
+      { country: "Australia", share: 5 },
+      { country: "USA", share: 2 }
+    ],
+    processing: [
+      { country: "China", share: 95 },
+      { country: "Malaysia", share: 3, note: "Lynas, first non-China Dy 2025" },
+      { country: "Myanmar", share: 2 }
+    ],
+    refining: [
+      { country: "China", share: 98, note: "Dy oxide & metal" },
+      { country: "Malaysia", share: 2 }
+    ]
+  },
+  {
+    id: "terbium",
+    symbol: "Tb",
+    name: "Terbium",
+    category: "Magnets & REEs",
+    why: "Heavy rare earth used like dysprosium to boost high-temperature performance of magnets. Also key for green phosphors in displays and solid-state lighting.",
+    applications: [
+      { title: "High-temp magnet doping", detail: "Improves magnet thermal stability in compact, high-power AI server motors." },
+      { title: "Green phosphors", detail: "Tb³⁺ produces green emission in fluorescent and LED phosphor blends." },
+      { title: "Magneto-optical storage", detail: "TbFeCo films in MO drives and emerging optical memory." },
+      { title: "Fuel cell electrolytes", detail: "Used in solid oxide fuel cells for data center power." }
+    ],
+    chokepoint: "Subject to China's April 2025 heavy-REE export controls. Lynas began producing terbium concentrate in 2024.",
+    mining: [
+      { country: "China", share: 70 },
+      { country: "Myanmar", share: 22 },
+      { country: "Australia", share: 5 }
+    ],
+    processing: [
+      { country: "China", share: 95 },
+      { country: "Malaysia", share: 3 }
+    ],
+    refining: [
+      { country: "China", share: 97 },
+      { country: "Malaysia", share: 3 }
+    ]
+  },
+  {
+    id: "yttrium",
+    symbol: "Y",
+    name: "Yttrium",
+    category: "Magnets & REEs",
+    why: "Used to dope GaN/InP semiconductors, in YAG lasers that pattern chips, and as a stabilizer in high-temperature superconducting wire — emerging in data center power.",
+    applications: [
+      { title: "YAG lasers", detail: "Yttrium aluminum garnet lasers used in semiconductor laser annealing and cutting." },
+      { title: "Phosphors", detail: "Red-emitting phosphors in displays and LEDs." },
+      { title: "Superconductors (YBCO)", detail: "High-temp superconducting tape for emerging data center power links." },
+      { title: "Refractory ceramics", detail: "Crucibles for melting high-purity semiconductor materials." }
+    ],
+    chokepoint: "China refines ~80% of yttrium. Subject to April 2025 heavy-REE export controls.",
+    mining: [
+      { country: "China", share: 65 },
+      { country: "Myanmar", share: 18 },
+      { country: "Australia", share: 8 },
+      { country: "USA", share: 3 },
+      { country: "India", share: 2 }
+    ],
+    processing: [
+      { country: "China", share: 85 },
+      { country: "Malaysia", share: 6, note: "Lynas" },
+      { country: "France", share: 2 }
+    ],
+    refining: [
+      { country: "China", share: 85 },
+      { country: "Malaysia", share: 6 },
+      { country: "Estonia", share: 2 }
+    ]
+  },
+
+  /* ===== ENERGY STORAGE ===== */
+  {
+    id: "lithium",
+    symbol: "Li",
+    name: "Lithium",
+    category: "Energy Storage",
+    why: "Powers the lithium-ion battery banks that back up every AI data center against grid failure — and increasingly, the BESS systems smoothing renewable supply.",
+    applications: [
+      { title: "Data center UPS", detail: "Li-ion battery banks providing seconds-to-minutes ride-through during outages." },
+      { title: "Grid-scale BESS", detail: "Battery energy storage smoothing renewable supply to AI loads." },
+      { title: "EV batteries", detail: "Powers the trucks and logistics fleets servicing data center construction." },
+      { title: "Glass strengthening", detail: "Li₂O in display glass for control screens." }
+    ],
+    chokepoint: "Australia mines the most spodumene; Chile mines the most brine. But China refines ~65% of battery-grade lithium chemicals.",
+    mining: [
+      { country: "Australia", share: 47, note: "Spodumene hard rock" },
+      { country: "Chile", share: 23, note: "Atacama brine" },
+      { country: "China", share: 16 },
+      { country: "Argentina", share: 6, note: "Salar brine" },
+      { country: "Brazil", share: 2 }
+    ],
+    processing: [
+      { country: "China", share: 65, note: "Lithium carbonate / hydroxide" },
+      { country: "Chile", share: 15 },
+      { country: "Argentina", share: 5 },
+      { country: "Australia", share: 5 },
+      { country: "USA", share: 3 }
+    ],
+    refining: [
+      { country: "China", share: 65, note: "Battery-grade chemicals" },
+      { country: "Chile", share: 12 },
+      { country: "South Korea", share: 5 },
+      { country: "Japan", share: 4 }
+    ]
+  },
+  {
+    id: "cobalt",
+    symbol: "Co",
+    name: "Cobalt",
+    category: "Energy Storage",
+    why: "Stabilizes lithium-ion cathodes used in data center UPS and EV batteries. Also used in thin cobalt films as copper barrier liners in cutting-edge chip interconnects.",
+    applications: [
+      { title: "Li-ion battery cathodes", detail: "NMC and LCO chemistries in UPS and consumer Li-ion cells." },
+      { title: "Chip interconnect liners", detail: "Cobalt barrier layers replacing tantalum in advanced sub-7nm node interconnects." },
+      { title: "Superalloys", detail: "Turbine blades for backup-power gas generators." },
+      { title: "Catalysts", detail: "Petroleum refining for fuels powering generators." }
+    ],
+    chokepoint: "DRC mines ~73% of cobalt; China refines ~70%. The chip industry now relies on cobalt for both batteries AND on-chip interconnects.",
+    mining: [
+      { country: "DRC", share: 73 },
+      { country: "Indonesia", share: 14 },
+      { country: "Russia", share: 2 },
+      { country: "Australia", share: 2 },
+      { country: "Canada", share: 1 },
+      { country: "Philippines", share: 1 }
+    ],
+    processing: [
+      { country: "China", share: 70, note: "Cobalt sulfate / metal" },
+      { country: "Finland", share: 8, note: "Umicore Kokkola" },
+      { country: "Indonesia", share: 6 },
+      { country: "Canada", share: 4 },
+      { country: "Japan", share: 3 },
+      { country: "Belgium", share: 3 }
+    ],
+    refining: [
+      { country: "China", share: 75, note: "Battery-grade cobalt sulfate" },
+      { country: "Finland", share: 8 },
+      { country: "Belgium", share: 3 },
+      { country: "Japan", share: 3 }
+    ]
+  },
+  {
+    id: "nickel",
+    symbol: "Ni",
+    name: "Nickel",
+    category: "Energy Storage",
+    why: "Primary cathode metal in high-energy Li-ion batteries (NMC/NCA). Also used in stainless-steel server chassis and in superalloys for backup turbines.",
+    applications: [
+      { title: "High-energy Li-ion cathodes", detail: "NMC811 and NCA cells used in UPS, EVs, and high-density storage." },
+      { title: "Server chassis (stainless)", detail: "Stainless-steel server racks and chassis." },
+      { title: "Superalloys", detail: "Inconel for backup gas-turbine generators." },
+      { title: "Plating", detail: "Corrosion-resistant plating on connectors and hardware." }
+    ],
+    chokepoint: "Indonesia mines >50% of global nickel and is rapidly building HPAL refining. China owns much of Indonesia's nickel processing capacity.",
+    mining: [
+      { country: "Indonesia", share: 55 },
+      { country: "Philippines", share: 11 },
+      { country: "Russia", share: 6 },
+      { country: "New Caledonia", share: 6 },
+      { country: "Australia", share: 4 },
+      { country: "Canada", share: 4 },
+      { country: "China", share: 3 }
+    ],
+    processing: [
+      { country: "Indonesia", share: 50, note: "Chinese-owned HPAL/RKEF" },
+      { country: "China", share: 25 },
+      { country: "Russia", share: 6 },
+      { country: "Japan", share: 4 },
+      { country: "Canada", share: 4 }
+    ],
+    refining: [
+      { country: "China", share: 35, note: "Nickel sulfate for batteries" },
+      { country: "Indonesia", share: 30 },
+      { country: "Russia", share: 8 },
+      { country: "Japan", share: 6 },
+      { country: "Canada", share: 5 }
+    ]
+  }
+];
+
+/* ============================================================
+   BUILD UI
+   ============================================================ */
+
+const GROUPS = [
+  { id: "Chip & Wafer", label: "Chip & Wafer Substrate" },
+  { id: "Power & Interconnect", label: "Power & Interconnect" },
+  { id: "Magnets & REEs", label: "Magnets & Rare Earths" },
+  { id: "Energy Storage", label: "Energy Storage" }
+];
+
+const list = document.getElementById("mineral-list");
+function renderList(filter = "") {
+  list.innerHTML = "";
+  const f = filter.toLowerCase().trim();
+  GROUPS.forEach(g => {
+    const items = MINERALS.filter(m =>
+      m.category === g.id &&
+      (!f || m.name.toLowerCase().includes(f) || m.symbol.toLowerCase().includes(f) || m.category.toLowerCase().includes(f))
+    );
+    if (items.length === 0) return;
+    const grpEl = document.createElement("div");
+    grpEl.className = "group";
+    grpEl.innerHTML = `<div class="group-title">${g.label}</div>`;
+    items.forEach(m => {
+      const el = document.createElement("div");
+      el.className = "mineral-item";
+      el.dataset.id = m.id;
+      el.innerHTML = `
+        <div class="symbol">${m.symbol}</div>
+        <div class="mineral-name">${m.name}</div>
+        <div class="mineral-meta">${m.mining.length + m.processing.length + m.refining.length} nodes</div>
+      `;
+      el.addEventListener("click", () => selectMineral(m.id));
+      grpEl.appendChild(el);
+    });
+    list.appendChild(grpEl);
+  });
+}
+renderList();
+
+document.getElementById("search").addEventListener("input", e => renderList(e.target.value));
+
+/* ============================================================
+   WORLD MAP
+   ============================================================ */
+const svg = d3.select("#map");
+const mapEl = document.querySelector(".map-container");
+let W = mapEl.clientWidth;
+let H = mapEl.clientHeight;
+
+const projection = d3.geoNaturalEarth1();
+const path = d3.geoPath(projection);
+
+/* All map elements live inside gZoom so pan/zoom transforms them together */
+const gZoom = svg.append("g").attr("class", "zoom-wrapper");
+const gOcean = gZoom.append("g");
+const gGraticule = gZoom.append("g");
+const gCountries = gZoom.append("g");
+const gArcs = gZoom.append("g");
+const gArrows = gZoom.append("g");
+const gNodes = gZoom.append("g");
+
+let currentZoomK = 1;
+
+const zoom = d3.zoom()
+  .scaleExtent([1, 10])
+  .on("zoom", (event) => {
+    gZoom.attr("transform", event.transform);
+    currentZoomK = event.transform.k;
+    /* Counter-scale node markers, labels, and direction arrows so they stay readable */
+    const inv = `scale(${1 / currentZoomK})`;
+    gNodes.selectAll(".node-inner").attr("transform", inv);
+    gNodes.selectAll(".label-inner").attr("transform", inv);
+    gArrows.selectAll(".arrow-inner").attr("transform", inv);
+  });
+
+svg.call(zoom);
+
+/* Zoom button wiring */
+document.getElementById("zoom-in").addEventListener("click", () => {
+  svg.transition().duration(280).call(zoom.scaleBy, 1.6);
+});
+document.getElementById("zoom-out").addEventListener("click", () => {
+  svg.transition().duration(280).call(zoom.scaleBy, 1 / 1.6);
+});
+document.getElementById("zoom-reset").addEventListener("click", () => {
+  svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+});
+
+/* Shared radius scale used by both nodes and arc-endpoint pullback */
+const radiusScale = d3.scaleSqrt().domain([0, 100]).range([3, 18]);
+
+let currentMineral = null;
+let world = null;
+
+function resize() {
+  W = mapEl.clientWidth;
+  H = mapEl.clientHeight;
+  svg.attr("viewBox", `0 0 ${W} ${H}`);
+  projection.fitSize([W * 0.95, H * 0.92], { type: "Sphere" });
+  draw();
+}
+window.addEventListener("resize", resize);
+
+function drawBase() {
+  // ocean sphere
+  gOcean.selectAll("path").data([{type:"Sphere"}]).join("path")
+    .attr("d", path).attr("class", "sphere");
+
+  // graticule
+  const graticule = d3.geoGraticule().step([20, 20]);
+  gGraticule.selectAll("path").data([graticule()]).join("path")
+    .attr("d", path).attr("class", "graticule");
+
+  // countries
+  if (world) {
+    const countries = topojson.feature(world, world.objects.countries).features;
+    gCountries.selectAll("path").data(countries).join("path")
+      .attr("d", path).attr("class", "country");
+  }
+}
+
+function draw() {
+  drawBase();
+  if (currentMineral) renderMineralOnMap(currentMineral);
+}
+
+/* Load world topojson */
+const WORLD_URLS = [
+  "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json",
+  "https://unpkg.com/world-atlas@2/countries-110m.json"
+];
+
+async function loadWorld() {
+  for (const url of WORLD_URLS) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) { world = await r.json(); return; }
+    } catch (e) { /* try next */ }
+  }
+}
+
+(async () => {
+  await loadWorld();
+  document.getElementById("loading").style.display = "none";
+  resize();
+  // auto-select first mineral after load
+  selectMineral("gallium");
+})();
+
+/* ============================================================
+   ARC GENERATOR — curved great-circle-ish path
+   ============================================================ */
+function arcPath(from, to, dstRadius) {
+  const p1 = projection(from);
+  const p2 = projection(to);
+  if (!p1 || !p2) return "";
+  const dx = p2[0] - p1[0];
+  const dy = p2[1] - p1[1];
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist < 2) return "";
+  /* leave a tiny gap so the arc kisses the edge of the destination circle */
+  const pull = (dstRadius || 0) + 1;
+  const shrink = Math.min(0.9, pull / dist);
+  const p2adj = [p2[0] - dx * shrink, p2[1] - dy * shrink];
+  const dr = dist * 1.3;
+  return `M${p1[0]},${p1[1]} A${dr},${dr} 0 0,1 ${p2adj[0]},${p2adj[1]}`;
+}
+
+/* ============================================================
+   RENDER MINERAL
+   ============================================================ */
+function renderMineralOnMap(m) {
+  // Build node list with stage info
+  const stageList = [
+    ["mining", m.mining],
+    ["processing", m.processing],
+    ["refining", m.refining]
+  ];
+
+  const nodes = [];
+  stageList.forEach(([stage, arr]) => {
+    arr.forEach(d => {
+      const coord = COORDS[d.country];
+      if (!coord) return;
+      nodes.push({ stage, country: d.country, share: d.share, note: d.note, coord });
+    });
+  });
+
+  // Build arcs (top mining → top processing → top refining)
+  const topMining = m.mining.slice(0, 4).map(d => ({...d, coord: COORDS[d.country]})).filter(d=>d.coord);
+  const topProcessing = m.processing.slice(0, 4).map(d => ({...d, coord: COORDS[d.country]})).filter(d=>d.coord);
+  const topRefining = m.refining.slice(0, 4).map(d => ({...d, coord: COORDS[d.country]})).filter(d=>d.coord);
+
+  const arcs = [];
+  topMining.forEach(src => {
+    topProcessing.forEach(dst => {
+      arcs.push({
+        from: src.coord, to: dst.coord,
+        kind: "mining-processing",
+        weight: src.share * dst.share,
+        dstShare: dst.share
+      });
+    });
+  });
+  topProcessing.forEach(src => {
+    topRefining.forEach(dst => {
+      arcs.push({
+        from: src.coord, to: dst.coord,
+        kind: "processing-refining",
+        weight: src.share * dst.share,
+        dstShare: dst.share
+      });
+    });
+  });
+  // Trim to strongest connections
+  arcs.sort((a,b)=>b.weight-a.weight);
+  const topArcs = arcs.slice(0, 14);
+
+  // Render arcs
+  const arcSel = gArcs.selectAll("path").data(topArcs);
+  arcSel.exit().remove();
+  const arcMerged = arcSel.enter().append("path")
+    .merge(arcSel)
+    .attr("class", d => `arc ${d.kind}`)
+    .attr("d", d => arcPath(d.from, d.to, radiusScale(d.dstShare)))
+    .attr("stroke-width", d => Math.max(0.4, Math.min(2.5, Math.sqrt(d.weight)/8)))
+    .attr("opacity", 0);
+  arcMerged.transition().duration(800).attr("opacity", 0.55);
+
+  // Mid-arc direction chevrons (placed after `d` is set so getPointAtLength is valid)
+  gArrows.selectAll(".arc-arrow").remove();
+  arcMerged.each(function(d) {
+    const len = this.getTotalLength();
+    if (len < 10) return; // too short to host a readable arrow
+    const mid  = this.getPointAtLength(len * 0.5);
+    const next = this.getPointAtLength(Math.min(len, len * 0.5 + 1));
+    const angle = Math.atan2(next.y - mid.y, next.x - mid.x) * 180 / Math.PI;
+    const color = d.kind === "mining-processing" ? "#c2392b" : "#b67d00";
+    const g = gArrows.append("g")
+      .attr("class", "arc-arrow")
+      .attr("transform", `translate(${mid.x},${mid.y}) rotate(${angle})`)
+      .attr("opacity", 0);
+    const inner = g.append("g")
+      .attr("class", "arrow-inner")
+      .attr("transform", `scale(${1 / currentZoomK})`);
+    inner.append("path")
+      .attr("d", "M-3,-2 L2,0 L-3,2")
+      .attr("fill", "none")
+      .attr("stroke", color)
+      .attr("stroke-width", 1.2)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round");
+    g.transition().duration(800).attr("opacity", 0.9);
+  });
+
+  // Render nodes — aggregate per country+stage
+  const nodeMap = new Map();
+  nodes.forEach(n => {
+    const key = n.country + "_" + n.stage;
+    if (!nodeMap.has(key)) nodeMap.set(key, n);
+  });
+  const nodeArr = Array.from(nodeMap.values());
+
+  const nodeSel = gNodes.selectAll(".node").data(nodeArr, d => d.country + "_" + d.stage);
+  nodeSel.exit().transition().duration(300).attr("opacity", 0).remove();
+
+  const nodeEnter = nodeSel.enter().append("g")
+    .attr("class", "node")
+    .attr("transform", d => {
+      const p = projection(d.coord);
+      return `translate(${p[0]},${p[1]})`;
+    });
+  /* inner group is counter-scaled on zoom so circles stay readable */
+  const inner = nodeEnter.append("g")
+    .attr("class", "node-inner")
+    .attr("transform", `scale(${1 / currentZoomK})`);
+  inner.append("circle")
+    .attr("class", d => `node-${d.stage}`)
+    .attr("r", 0)
+    .attr("opacity", 0.9)
+    .on("mouseenter", function(ev, d) {
+      d3.select(this).transition().duration(150).attr("r", radiusScale(d.share) * 1.3);
+      showTooltip(ev, d);
+    })
+    .on("mousemove", function(ev) { moveTooltip(ev); })
+    .on("mouseleave", function(ev, d) {
+      d3.select(this).transition().duration(150).attr("r", radiusScale(d.share));
+      hideTooltip();
+    });
+
+  /* update positions (in case projection changed) and apply current zoom counter-scale */
+  nodeSel.merge(nodeEnter)
+    .attr("transform", d => {
+      const p = projection(d.coord);
+      return `translate(${p[0]},${p[1]})`;
+    })
+    .select(".node-inner")
+    .attr("transform", `scale(${1 / currentZoomK})`);
+
+  gNodes.selectAll(".node-inner circle")
+    .transition().duration(600)
+    .attr("r", d => radiusScale(d.share));
+
+  // Label each country only once, anchored to its largest stage circle
+  gNodes.selectAll(".label-group").remove();
+  const labelMap = new Map();
+  nodeArr.forEach(n => {
+    if (n.share < 15) return;
+    const existing = labelMap.get(n.country);
+    if (!existing || n.share > existing.share) labelMap.set(n.country, n);
+  });
+  Array.from(labelMap.values()).forEach(d => {
+    const p = projection(d.coord);
+    if (!p) return;
+    const offsetX = radiusScale(d.share) + 4;
+    const g = gNodes.append("g")
+      .attr("class", "label-group")
+      .attr("transform", `translate(${p[0]},${p[1]})`);
+    const li = g.append("g")
+      .attr("class", "label-inner")
+      .attr("transform", `scale(${1 / currentZoomK})`);
+    li.append("text").attr("class", "node-label")
+      .attr("x", offsetX).attr("y", 3).text(d.country);
+    li.append("text").attr("class", "node-share")
+      .attr("x", offsetX).attr("y", 14).text(d.share + "%");
+  });
+
+  // Update header overlay
+  document.getElementById("sel-sym").textContent = m.symbol;
+  document.getElementById("sel-name").textContent = m.name;
+  document.getElementById("sel-cat").textContent = m.category;
+
+  // Stats pills
+  const statsEl = document.getElementById("map-stats");
+  statsEl.innerHTML = "";
+  const topMine = m.mining[0];
+  const topRef = m.refining[0];
+  statsEl.innerHTML = `
+    <div class="stat-pill">
+      <div class="stat-label">Top miner</div>
+      <div class="stat-value">${topMine.country} · ${topMine.share}%</div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-label">Top refiner</div>
+      <div class="stat-value">${topRef.country} · ${topRef.share}%</div>
+    </div>
+  `;
+
+  // Sidebar active state
+  document.querySelectorAll(".mineral-item").forEach(el => {
+    el.classList.toggle("active", el.dataset.id === m.id);
+  });
+
+  // Country highlighting
+  const countriesByStage = { mining: new Set(), processing: new Set(), refining: new Set() };
+  m.mining.forEach(d => countriesByStage.mining.add(d.country));
+  m.processing.forEach(d => countriesByStage.processing.add(d.country));
+  m.refining.forEach(d => countriesByStage.refining.add(d.country));
+  // Map country name to ISO numeric (rough mapping for the countries in our list)
+  const COUNTRY_NAME_TO_ID = {
+    "China": "156", "USA": "840", "Australia": "036", "DRC": "180", "Chile": "152",
+    "Brazil": "076", "Russia": "643", "Canada": "124", "Indonesia": "360", "Peru": "604",
+    "Mexico": "484", "South Africa": "710", "Myanmar": "104", "India": "356", "Japan": "392",
+    "South Korea": "410", "Belgium": "056", "Germany": "276", "France": "250", "Norway": "578",
+    "Estonia": "233", "Vietnam": "704", "Malaysia": "458", "Argentina": "032", "Bolivia": "068",
+    "Philippines": "608", "New Caledonia": "540", "Kazakhstan": "398", "Mongolia": "496",
+    "Zimbabwe": "716", "Rwanda": "646", "Zambia": "894", "Austria": "040", "Finland": "246",
+    "Taiwan": "158", "Poland": "616", "Iceland": "352", "UK": "826", "Switzerland": "756",
+    "Nigeria": "566", "Tanzania": "834", "Madagascar": "450", "Mozambique": "508", "Ukraine": "804"
+  };
+  gCountries.selectAll("path")
+    .attr("class", d => {
+      const id = d.id; // numeric ISO
+      let cls = "country";
+      for (const [name, isoId] of Object.entries(COUNTRY_NAME_TO_ID)) {
+        if (isoId.padStart(3,"0") === String(id).padStart(3,"0")) {
+          if (countriesByStage.refining.has(name)) cls += " has-refining";
+          else if (countriesByStage.processing.has(name)) cls += " has-processing";
+          else if (countriesByStage.mining.has(name)) cls += " has-mining";
+          break;
+        }
+      }
+      return cls;
+    });
+
+  // Populate info panel
+  renderInfoPanel(m);
+}
+
+/* ============================================================
+   TOOLTIP
+   ============================================================ */
+const tooltip = document.getElementById("tooltip");
+function showTooltip(ev, d) {
+  const m = currentMineral;
+  if (!m) return;
+
+  /* gather every stage this country participates in, within the current mineral */
+  const stages = [
+    { key: "mining", label: "Mining", arr: m.mining },
+    { key: "processing", label: "Processing", arr: m.processing },
+    { key: "refining", label: "Refining", arr: m.refining }
+  ];
+  const rows = stages
+    .map(s => {
+      const entry = s.arr.find(x => x.country === d.country);
+      return entry ? { key: s.key, label: s.label, share: entry.share, note: entry.note } : null;
+    })
+    .filter(Boolean);
+
+  const rowsHtml = rows.map(r => `
+    <div>
+      <div class="tt-row-main">
+        <div class="tt-row-dot ${r.key}"></div>
+        <div class="tt-row-label">${r.label}</div>
+        <div class="tt-row-share">${r.share}%</div>
+      </div>
+      ${r.note ? `<div class="tt-row-note">${r.note}</div>` : ""}
+    </div>
+  `).join("");
+
+  tooltip.innerHTML = `
+    <div class="tt-country-header">${d.country}</div>
+    <div class="tt-rows">${rowsHtml}</div>
+  `;
+  tooltip.style.opacity = 1;
+  moveTooltip(ev);
+}
+function moveTooltip(ev) {
+  const rect = mapEl.getBoundingClientRect();
+  const x = ev.clientX - rect.left + 14;
+  const y = ev.clientY - rect.top + 14;
+  tooltip.style.left = x + "px";
+  tooltip.style.top = y + "px";
+}
+function hideTooltip() { tooltip.style.opacity = 0; }
+
+/* ============================================================
+   INFO PANEL
+   ============================================================ */
+function renderInfoPanel(m) {
+  const panel = document.getElementById("info-panel");
+
+  const stageHtml = (title, stage, arr) => {
+    const items = arr.map(d =>
+      `<div class="chain-country">
+        <span class="chain-country-name">${d.country}</span>
+        <span class="chain-country-share">${d.share}%</span>
+      </div>`
+    ).join("");
+    return `
+      <div class="chain-stage">
+        <div class="chain-stage-header">
+          <div class="chain-stage-dot ${stage}"></div>
+          <div class="chain-stage-label">${title}</div>
+        </div>
+        <div class="chain-countries">${items}</div>
+      </div>
+    `;
+  };
+
+  const apps = m.applications.map(a =>
+    `<li>
+      <div>
+        <span class="app-title">${a.title}</span>
+        <span class="app-detail">${a.detail}</span>
+      </div>
+    </li>`
+  ).join("");
+
+  panel.innerHTML = `
+    <div class="info-section">
+      <h3>Why it matters for AI</h3>
+      <div class="why-text">${m.why}</div>
+    </div>
+
+    <div class="info-section">
+      <h3>Top applications</h3>
+      <ul class="applications-list">${apps}</ul>
+    </div>
+
+    <div class="info-section">
+      <h3>Supply chain</h3>
+      ${stageHtml("Mining", "mining", m.mining)}
+      ${stageHtml("Processing", "processing", m.processing)}
+      ${stageHtml("Refining", "refining", m.refining)}
+    </div>
+
+    ${m.chokepoint ? `
+    <div class="info-section">
+      <h3>Strategic chokepoint</h3>
+      <div class="chokepoint">
+        <div class="chokepoint-label">Concentration risk</div>
+        <div class="chokepoint-text">${m.chokepoint}</div>
+      </div>
+    </div>
+    ` : ""}
+  `;
+}
+
+function selectMineral(id) {
+  const m = MINERALS.find(x => x.id === id);
+  if (!m) return;
+  currentMineral = m;
+  renderMineralOnMap(m);
+}
+
+/* ============================================================
+   METHODOLOGY MODAL
+   ============================================================ */
+const modal = document.getElementById("modal-backdrop");
+document.getElementById("open-methodology").addEventListener("click", () => {
+  modal.classList.add("open");
+});
+document.getElementById("modal-close").addEventListener("click", () => {
+  modal.classList.remove("open");
+});
+modal.addEventListener("click", (e) => {
+  if (e.target === modal) modal.classList.remove("open");
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") modal.classList.remove("open");
+});
+
+</script>
+</body>
+</html>
