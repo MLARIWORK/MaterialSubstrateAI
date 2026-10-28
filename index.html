@@ -1059,7 +1059,8 @@ const COORDS = {
   Ukraine:     [31.16, 48.38],
   Turkey:      [35.24, 38.96],
   Ethiopia:    [40.49,  9.15],
-  Ghana:       [-1.02,  7.95]
+  Ghana:       [-1.02,  7.95],
+  "North Korea":[127.51, 40.34]
 };
 
 const MINERALS = [
@@ -1314,31 +1315,31 @@ const MINERALS = [
       { title: "Server PCB & busbars", detail: "Backplanes and copper busbars distributing power within racks." },
       { title: "Heat exchangers", detail: "Liquid-cooling cold plates and heat pipes for AI chips." }
     ],
-    chokepoint: "Mining is geographically distributed; refining is more concentrated in China (~45%). The IEA warns of structural copper deficits as AI/electrification demand surges.",
+    chokepoint: "China smelts ~half of world copper and refines ~48%. Copper joined the US critical-minerals list in Nov 2025. Section 232 tariffs (Aug 2025) hit semis and derivatives; refined cathode was still untariffed as of Sep 2026. Grasberg's Sep 2025 mudslide cut Indonesian output ~30%; full recovery expected end-2027.",
     mining: [
       { country: "Chile", share: 23 },
-      { country: "DRC", share: 14 },
+      { country: "DRC", share: 14, note: "Kamoa-Kakula; fastest-growing major" },
       { country: "Peru", share: 12 },
       { country: "China", share: 8 },
-      { country: "USA", share: 5 },
-      { country: "Australia", share: 4 },
-      { country: "Zambia", share: 4 },
-      { country: "Russia", share: 4 }
+      { country: "Russia", share: 6 },
+      { country: "USA", share: 4 },
+      { country: "Zambia", share: 4 }
     ],
     processing: [
-      { country: "China", share: 45, note: "Smelting capacity" },
+      { country: "China", share: 50, note: "Smelter output, 2025" },
       { country: "Chile", share: 9 },
       { country: "Japan", share: 7 },
       { country: "DRC", share: 6 },
       { country: "Russia", share: 4 }
     ],
     refining: [
-      { country: "China", share: 45, note: "Refined cathode copper" },
-      { country: "Chile", share: 9 },
-      { country: "Japan", share: 6 },
-      { country: "Russia", share: 4 },
-      { country: "India", share: 3 },
-      { country: "USA", share: 3 }
+      { country: "China", share: 48, note: "Refined cathode copper" },
+      { country: "DRC", share: 10, note: "Mostly SX-EW cathode" },
+      { country: "Chile", share: 6 },
+      { country: "Japan", share: 5 },
+      { country: "Russia", share: 3 },
+      { country: "USA", share: 3 },
+      { country: "India", share: 2 }
     ]
   },
   {
@@ -1353,14 +1354,15 @@ const MINERALS = [
       { title: "Carbide cutting tools", detail: "Precision machining of fab equipment and chip packaging." },
       { title: "Heat sinks (W-Cu composites)", detail: "High-power AI chip thermal management." }
     ],
-    chokepoint: "China produces ~80% of mined tungsten and >85% of refined output. Imposed export licensing in early 2025.",
+    chokepoint: "China mines ~80% of tungsten and dominates APT/oxide. Its Feb 2025 export licensing was not covered by the Nov 2025 suspension and remains in force; military-end-use exports to Japan were barred Jan 2026. Chinese prices peaked Mar 2026, then fell ~70% by Oct. Korea's Sangdong began processing Jul 2026.",
     mining: [
       { country: "China", share: 80 },
-      { country: "Vietnam", share: 5 },
-      { country: "Russia", share: 3 },
-      { country: "Mongolia", share: 2 },
-      { country: "Australia", share: 2 },
-      { country: "Bolivia", share: 2 }
+      { country: "Vietnam", share: 4, note: "Masan Nui Phao" },
+      { country: "Kazakhstan", share: 3, note: "Boguty mine, started 2025" },
+      { country: "Russia", share: 2 },
+      { country: "North Korea", share: 2 },
+      { country: "Bolivia", share: 2 },
+      { country: "Australia", share: 1 }
     ],
     processing: [
       { country: "China", share: 85, note: "APT / tungsten oxide" },
@@ -1387,18 +1389,19 @@ const MINERALS = [
       { title: "Sputtering targets", detail: "Used in chip fabrication PVD processes." },
       { title: "Aerospace superalloys", detail: "Turbine engines including backup generation." }
     ],
-    chokepoint: "DRC and Rwanda mine ~60% of tantalum. Refining is split between US (KEMET), Germany, Japan, and China.",
+    chokepoint: "DRC (~52%) and Rwanda (~16%) dominated 2025 mined tantalum (USGS). M23 rebels control DRC's Rubaya coltan mine, where a Jan 2026 collapse killed 200+; UN experts say its ore is laundered through Rwanda. US-brokered DRC–Rwanda accords (Jun/Dec 2025) have not ended fighting.",
     mining: [
-      { country: "DRC", share: 41 },
-      { country: "Rwanda", share: 20 },
-      { country: "Brazil", share: 12 },
-      { country: "Nigeria", share: 8 },
-      { country: "China", share: 6 },
-      { country: "Ethiopia", share: 4 }
+      { country: "DRC", share: 52, note: "Rubaya under M23 control" },
+      { country: "Rwanda", share: 16, note: "Includes smuggled DRC coltan" },
+      { country: "Nigeria", share: 16 },
+      { country: "Brazil", share: 8 },
+      { country: "China", share: 3 },
+      { country: "Australia", share: 2 },
+      { country: "Ethiopia", share: 2 }
     ],
     processing: [
       { country: "USA", share: 25 },
-      { country: "Germany", share: 20, note: "H.C. Starck" },
+      { country: "Germany", share: 20, note: "Taniobis (JX Advanced Metals)" },
       { country: "China", share: 18 },
       { country: "Japan", share: 15 },
       { country: "Kazakhstan", share: 10, note: "Ulba Metallurgical" }
@@ -1423,27 +1426,25 @@ const MINERALS = [
       { title: "Bump bonding (flip chip)", detail: "Gold microbumps in advanced packaging like CoWoS for AI accelerators." },
       { title: "Reflective coatings", detail: "Gold mirrors in EUV photolithography optics." }
     ],
-    chokepoint: "Mining is the most diversified of any AI mineral. Refining concentrates in Switzerland, South Africa, and the US.",
+    chokepoint: "Mining is the most diversified of any AI mineral: the top five producers held ~41% in 2025 (USGS). Bullion refining clusters in Switzerland (~one-third of world output). An Aug 2025 US customs ruling briefly put tariffs on Swiss kilobars; a Sep 2025 order exempted bullion.",
     mining: [
-      { country: "China", share: 10 },
-      { country: "Russia", share: 10 },
-      { country: "Australia", share: 9 },
+      { country: "China", share: 12 },
+      { country: "Russia", share: 9 },
+      { country: "Australia", share: 8 },
       { country: "Canada", share: 6 },
       { country: "USA", share: 5 },
-      { country: "Ghana", share: 4 },
-      { country: "Peru", share: 3 },
-      { country: "Mexico", share: 3 },
-      { country: "South Africa", share: 3 }
+      { country: "Ghana", share: 5 },
+      { country: "Mexico", share: 4 }
     ],
     processing: [
-      { country: "Switzerland", share: 40, note: "PAMP, MKS, Valcambi, Argor" },
+      { country: "Switzerland", share: 34, note: "PAMP, MKS, Valcambi, Argor" },
       { country: "South Africa", share: 12, note: "Rand Refinery" },
       { country: "USA", share: 8 },
       { country: "Australia", share: 7, note: "Perth Mint" },
       { country: "UK", share: 6 }
     ],
     refining: [
-      { country: "Switzerland", share: 40 },
+      { country: "Switzerland", share: 34 },
       { country: "South Africa", share: 12 },
       { country: "USA", share: 10 },
       { country: "China", share: 9 },
@@ -1462,13 +1463,13 @@ const MINERALS = [
       { title: "Connector plating", detail: "Pd-Ni plating on high-reliability connectors for repeated mate/unmate cycles." },
       { title: "Semiconductor catalysis", detail: "Catalyst in precursor chemistry and select CVD processes inside chip fabs." }
     ],
-    chokepoint: "Russia (Nornickel) and South Africa's Bushveld Complex together produce ~70% of mined palladium. Russia sanctions risk and Bushveld labor instability are both live concerns for AI server supply chains.",
+    chokepoint: "Russia (Nornickel) and South Africa mined ~80% of 2025 palladium (USGS). In 2026 Commerce found Russian palladium dumped and subsidized (CVD ~109%), but the ITC ruled no injury on May 29, 2026, so no duties apply. Lower Montana output cut the US share.",
     mining: [
-      { country: "Russia", share: 37, note: "Nornickel, Norilsk" },
-      { country: "South Africa", share: 34, note: "Bushveld Complex" },
+      { country: "Russia", share: 43, note: "Nornickel, Norilsk" },
+      { country: "South Africa", share: 36, note: "Bushveld Complex" },
       { country: "Canada", share: 8, note: "Sudbury PGM byproduct" },
-      { country: "USA", share: 7, note: "Stillwater, Montana" },
-      { country: "Zimbabwe", share: 7, note: "Great Dyke" }
+      { country: "Zimbabwe", share: 8, note: "Great Dyke" },
+      { country: "USA", share: 3, note: "Stillwater, Montana" }
     ],
     processing: [
       { country: "Russia", share: 35 },
@@ -1870,7 +1871,8 @@ const COUNTRY_NAME_TO_ID = {
   "Philippines": "608", "New Caledonia": "540", "Kazakhstan": "398", "Mongolia": "496",
   "Zimbabwe": "716", "Rwanda": "646", "Zambia": "894", "Austria": "040", "Finland": "246",
   "Taiwan": "158", "Poland": "616", "Iceland": "352", "UK": "826", "Switzerland": "756",
-  "Nigeria": "566", "Tanzania": "834", "Madagascar": "450", "Mozambique": "508", "Ukraine": "804"
+  "Nigeria": "566", "Tanzania": "834", "Madagascar": "450", "Mozambique": "508", "Ukraine": "804",
+  "Turkey": "792", "Ethiopia": "231", "Ghana": "288", "Greenland": "304", "North Korea": "408"
 };
 
 /* Tint each country by the highest-priority ACTIVE stage it participates in
