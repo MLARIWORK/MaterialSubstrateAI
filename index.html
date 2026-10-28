@@ -888,7 +888,7 @@
   <header>
     <div class="brand">
       <div class="mark">The Material <em>Substrate</em> of AI</div>
-      <div class="tag">Critical Minerals & REE Supply Chain · 2024–2026</div>
+      <div class="tag">Critical Minerals & REE Supply Chain · data through Oct 2026</div>
     </div>
     <div class="header-right">
       <div class="legend" role="group" aria-label="Toggle supply-chain layers">
@@ -944,8 +944,8 @@
 
     <div class="modal-section">
       <h3>Approach</h3>
-      <p>This atlas traces 18 critical minerals and rare earth elements across three stages of their supply chains — <strong>mining</strong> (raw extraction), <strong>processing</strong> (concentration and chemical conversion), and <strong>refining</strong> (production of the final purified form used in chips, magnets, or batteries) — for materials that the AI industry materially depends on, whether for the silicon itself, the data centers that house it, or the power and storage systems that feed it.</p>
-      <p>Country shares are approximate global percentages drawn from public 2024–2025 production data. They should be read as orders of magnitude, not precise figures: sources disagree by a few percentage points on individual countries, undocumented production (particularly Myanmar rare earths and artisanal mining in the DRC) does not always appear in official statistics, and for some commodities the "processing" and "refining" stages are functionally fused within a single industrial complex.</p>
+      <p>This atlas traces 21 critical minerals and rare earth elements across three stages of their supply chains — <strong>mining</strong> (raw extraction), <strong>processing</strong> (concentration and chemical conversion), and <strong>refining</strong> (production of the final purified form used in chips, magnets, or batteries) — for materials that the AI industry materially depends on, whether for the silicon itself, the data centers that house it, or the power and storage systems that feed it.</p>
+      <p>Country shares are approximate global percentages drawn mainly from 2025 production estimates (USGS Mineral Commodity Summaries 2026), with export-control and project status current to late October 2026. They should be read as orders of magnitude, not precise figures: sources disagree by a few percentage points on individual countries, undocumented production (particularly Myanmar rare earths and artisanal mining in the DRC) does not always appear in official statistics, and for some commodities the "processing" and "refining" stages are functionally fused within a single industrial complex.</p>
     </div>
 
     <div class="modal-section">
@@ -954,8 +954,10 @@
         <li>Many of these minerals are dual-use. Silicon production is dominated by solar, copper by general electrification, lithium by EVs. Shares reflect total global production rather than the AI-specific slice.</li>
         <li>Rare-earth aggregates, where cited, refer to the four magnet REEs — neodymium, praseodymium, dysprosium, and terbium — the IEA's standard reporting category.</li>
         <li>For silicon, "refining" here means advanced logic wafer fabrication (16/14nm and below) — TSMC, Samsung, Intel, SMIC — by capacity share. Polysilicon production sits under "processing."</li>
-        <li>Refining shares for cobalt, nickel, and lithium reflect battery-grade chemicals (sulfates and hydroxides), not refined metal.</li>
-        <li>Hafnium figures are estimated — the commercial market is small and reporting is sparse.</li>
+        <li>Refining shares for cobalt, nickel, lithium, and manganese reflect battery-grade chemicals (sulfates and hydroxides), not refined metal.</li>
+        <li>Hafnium processing and refining figures are estimated — the commercial market is small and USGS publishes no world production data. Mining shares are zircon concentrate output.</li>
+        <li>No source splits heavy rare-earth mining by element; dysprosium, terbium, and yttrium mining shares are estimates scaled from ionic-clay and Myanmar output.</li>
+        <li>China's Oct 2025 rare-earth controls and its ban on gallium, germanium, and antimony exports to the US are suspended. The legal texts expire Nov 10 and Nov 27, 2026; in Sep 2026 Beijing said the truce would run to Jan 10, 2027, but had not amended those texts by late October.</li>
         <li>Selection of which minerals qualify as "AI-critical" is editorial. The threshold was "plays a non-trivial role in building, powering, cooling, storing, or interconnecting AI compute."</li>
       </ul>
     </div>
@@ -964,28 +966,40 @@
       <h3>Primary sources</h3>
       <ul class="source-list">
         <li>
-          <a href="https://pubs.usgs.gov/periodicals/mcs2025/" target="_blank" rel="noopener">U.S. Geological Survey — Mineral Commodity Summaries 2025</a>
-          <span class="src-detail">Annual reference for global production, reserves, and trade flows of critical mineral commodities.</span>
+          <a href="https://pubs.usgs.gov/publication/mcs2026" target="_blank" rel="noopener">U.S. Geological Survey — Mineral Commodity Summaries 2026</a>
+          <span class="src-detail">2025 production estimates by country for most minerals here; also the Nov 2025 US critical-minerals list, which added copper, silicon, and boron.</span>
         </li>
         <li>
           <a href="https://www.iea.org/reports/global-critical-minerals-outlook-2025" target="_blank" rel="noopener">IEA — Global Critical Minerals Outlook 2025</a>
           <span class="src-detail">Supply concentration analysis and export-control tracking, including the December 2024 Chinese restrictions on gallium, germanium, and antimony.</span>
         </li>
         <li>
-          <a href="https://www.iea.org/reports/rare-earth-elements" target="_blank" rel="noopener">IEA — Rare Earth Elements (2025)</a>
-          <span class="src-detail">Mining, refining, and magnet-manufacturing breakdowns for the magnet REE group; tracks the April and October 2025 Chinese heavy-REE export controls.</span>
+          <a href="https://www.iea.org/reports/rare-earth-elements" target="_blank" rel="noopener">IEA — Rare Earth Elements (2026)</a>
+          <span class="src-detail">Separation and magnet-manufacturing shares for the magnet REE group (China ~91% and ~94%).</span>
+        </li>
+        <li>
+          <a href="https://source.benchmarkminerals.com/" target="_blank" rel="noopener">Benchmark Mineral Intelligence</a>
+          <span class="src-detail">Heavy rare-earth refining concentration and the state of Chinese licensing after the 2025–26 US–China truce.</span>
+        </li>
+        <li>
+          <a href="https://www.csis.org/analysis/us-china-trade-truce-has-not-solved-gallium-problem" target="_blank" rel="noopener">CSIS — The US-China Trade Truce Has Not Solved the Gallium Problem (May 2026)</a>
+          <span class="src-detail">Chinese gallium export volumes after the Nov 2025 suspension.</span>
+        </li>
+        <li>
+          <a href="https://www.trendforce.com/" target="_blank" rel="noopener">TrendForce — advanced-process foundry capacity</a>
+          <span class="src-detail">Country shares of ≤16nm logic capacity used for the silicon wafer-fab stage.</span>
         </li>
         <li>
           <a href="https://www.csis.org/analysis/developing-rare-earth-processing-hubs-analytical-approach" target="_blank" rel="noopener">CSIS — Developing Rare Earth Processing Hubs (July 2025)</a>
           <span class="src-detail">Coverage of non-Chinese refining buildout: Lynas Malaysia, Iluka Eneabba, Arafura Nolans, Solvay La Rochelle.</span>
         </li>
         <li>
-          <a href="https://www.cobaltinstitute.org/" target="_blank" rel="noopener">Cobalt Institute — Cobalt Market Report 2024 (May 2025)</a>
+          <a href="https://www.cobaltinstitute.org/" target="_blank" rel="noopener">Cobalt Institute — Cobalt Market Report</a>
           <span class="src-detail">DRC and Indonesian mining splits and Chinese refining concentration; HPAL ramp-up data.</span>
         </li>
         <li>
           <a href="https://www.bernreuter.com/" target="_blank" rel="noopener">Bernreuter Research — Polysilicon Market Outlook 2029</a>
-          <span class="src-detail">2024 polysilicon production rankings; cited the 93.5% Chinese share and Wacker's standing as the lone non-Chinese top-10 producer.</span>
+          <span class="src-detail">2024 polysilicon production rankings: China 93.5%, with Wacker the lone non-Chinese top-10 producer.</span>
         </li>
         <li>
           <a href="https://elements.visualcapitalist.com/" target="_blank" rel="noopener">Visual Capitalist — Elements</a>
@@ -998,17 +1012,17 @@
       </ul>
     </div>
 
-    <div class="modal-footer">Compiled May 2026 · figures reflect 2024–2025 reporting cycles</div>
+    <div class="modal-footer">Compiled May 2026 · refreshed Oct 2026 · production figures mostly 2025 estimates</div>
   </div>
 </div>
 
 <script>
 /* ============================================================
    MINERAL & SUPPLY CHAIN DATA
-   shares are approximate 2024–2025 global percentages
-   Sources: USGS Mineral Commodity Summaries 2025, IEA Critical
-   Minerals Outlook 2025, CSIS, Visual Capitalist, Bernreuter,
-   Cobalt Institute, Mining Technology, Statista, IEA REE report
+   shares are approximate global percentages, mostly 2025 estimates
+   (refreshed Oct 2026). Sources: USGS Mineral Commodity Summaries
+   2026, IEA Rare Earth Elements 2026, Benchmark, CSIS, TrendForce,
+   Bernreuter, Cobalt Institute, ICSG, company reports
    ============================================================ */
 
 const COORDS = {
