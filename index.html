@@ -1060,7 +1060,8 @@ const COORDS = {
   Turkey:      [35.24, 38.96],
   Ethiopia:    [40.49,  9.15],
   Ghana:       [-1.02,  7.95],
-  "North Korea":[127.51, 40.34]
+  "North Korea":[127.51, 40.34],
+  Thailand:    [100.99, 15.87]
 };
 
 const MINERALS = [
@@ -1503,26 +1504,28 @@ const MINERALS = [
       { title: "Robotic actuators", detail: "Precision servos in data center automation and humanoid robotics." },
       { title: "Generator magnets", detail: "Wind turbines feeding renewable power to AI facilities." }
     ],
-    chokepoint: "China refines 91% of all magnet rare earths and produces 94% of sintered NdFeB magnets. Imposed escalating export controls in Apr & Oct 2025.",
+    chokepoint: "China separates ~91% of magnet rare earths and makes ~94% of sintered NdFeB magnets (IEA). April 2025 magnet licensing remains; the Oct 2025 expansion was suspended in Nov 2025, and MOFCOM said in Sep 2026 the truce runs to Jan 10, 2027. MP Materials holds a $110/kg DoD price floor.",
     mining: [
-      { country: "China", share: 60 },
-      { country: "USA", share: 15, note: "Mountain Pass, CA" },
-      { country: "Myanmar", share: 8, note: "Often illegal, flows to China" },
+      { country: "China", share: 69 },
+      { country: "USA", share: 13, note: "Mountain Pass, CA" },
       { country: "Australia", share: 7, note: "Mt Weld, Lynas" },
-      { country: "India", share: 2 },
+      { country: "Myanmar", share: 6, note: "Often illegal, flows to China" },
+      { country: "Thailand", share: 1 },
+      { country: "India", share: 1 },
       { country: "Russia", share: 1 }
     ],
     processing: [
       { country: "China", share: 91, note: "Separation & oxide refining" },
       { country: "Malaysia", share: 5, note: "Lynas, Kuantan" },
+      { country: "USA", share: 2, note: "MP Materials NdPr oxide" },
       { country: "Estonia", share: 1, note: "Neo Performance Materials" },
       { country: "France", share: 1, note: "Solvay La Rochelle" }
     ],
     refining: [
       { country: "China", share: 94, note: "NdFeB sintered magnets" },
-      { country: "Japan", share: 3, note: "Shin-Etsu, TDK" },
-      { country: "Germany", share: 1 },
-      { country: "USA", share: 1 }
+      { country: "Japan", share: 3, note: "Shin-Etsu, TDK, Proterial" },
+      { country: "Germany", share: 1, note: "VAC" },
+      { country: "USA", share: 1, note: "MP Independence, Fort Worth" }
     ]
   },
   {
@@ -1537,24 +1540,28 @@ const MINERALS = [
       { title: "Aircraft engine alloys", detail: "Used in turbines, including data center backup power." },
       { title: "Pigments & ceramics", detail: "Yellow ceramic pigments and welding goggles." }
     ],
-    chokepoint: "Same as neodymium — China refines ~91% of magnet rare earths.",
+    chokepoint: "Same chokepoint as neodymium: China separates ~90% of NdPr oxide and makes ~94% of NdFeB magnets. Lynas (Malaysia) and MP Materials (US) are the main outside separators. China's Oct 2025 controls stay suspended; MOFCOM said in Sep 2026 the truce now runs to Jan 10, 2027.",
     mining: [
-      { country: "China", share: 60 },
-      { country: "USA", share: 15 },
-      { country: "Australia", share: 8 },
-      { country: "Myanmar", share: 7 },
-      { country: "India", share: 2 }
+      { country: "China", share: 69 },
+      { country: "USA", share: 13, note: "Mountain Pass, CA" },
+      { country: "Australia", share: 7, note: "Mt Weld, Lynas" },
+      { country: "Myanmar", share: 6 },
+      { country: "Thailand", share: 1 },
+      { country: "India", share: 1 },
+      { country: "Russia", share: 1 }
     ],
     processing: [
       { country: "China", share: 90 },
       { country: "Malaysia", share: 6, note: "Lynas" },
+      { country: "USA", share: 2, note: "MP Materials NdPr oxide" },
       { country: "Estonia", share: 1 },
       { country: "France", share: 1 }
     ],
     refining: [
-      { country: "China", share: 92 },
-      { country: "Japan", share: 4 },
-      { country: "Malaysia", share: 2 }
+      { country: "China", share: 94, note: "NdPr metal & magnets" },
+      { country: "Japan", share: 3 },
+      { country: "Germany", share: 1 },
+      { country: "USA", share: 1 }
     ]
   },
   {
@@ -1569,17 +1576,18 @@ const MINERALS = [
       { title: "Nuclear reactor control rods", detail: "Neutron absorber for backup nuclear power." },
       { title: "Laser materials", detail: "Dy-doped fiber lasers in industrial cutting." }
     ],
-    chokepoint: "Almost all heavy rare earth refining happens in China (and Myanmar feeding China). Lynas (Malaysia) became the first non-Chinese commercial Dy oxide producer in May 2025.",
+    chokepoint: "Over 99% of heavy rare earths are separated in China (Benchmark, Jan 2026). April 2025 licensing still applies, eased by general licences from Dec 2025; Japan faces tighter curbs since Jan 2026. Lynas Malaysia is the only commercial non-China Dy oxide source; Solvay France targets autumn 2026.",
     mining: [
-      { country: "China", share: 65, note: "Ionic clay deposits, south China" },
-      { country: "Myanmar", share: 25, note: "Flows mostly into China" },
-      { country: "Australia", share: 5 },
-      { country: "USA", share: 2 }
+      { country: "China", share: 62, note: "Ionic clay deposits, south China" },
+      { country: "Myanmar", share: 22, note: "Kachin clays, flows to China" },
+      { country: "Australia", share: 6, note: "Mt Weld, Lynas" },
+      { country: "Thailand", share: 3, note: "Ionic clay, exported to China" },
+      { country: "USA", share: 2 },
+      { country: "Brazil", share: 1, note: "Serra Verde ionic clay" }
     ],
     processing: [
-      { country: "China", share: 95 },
-      { country: "Malaysia", share: 3, note: "Lynas, first non-China Dy 2025" },
-      { country: "Myanmar", share: 2 }
+      { country: "China", share: 98 },
+      { country: "Malaysia", share: 2, note: "Lynas, only non-China producer" }
     ],
     refining: [
       { country: "China", share: 98, note: "Dy oxide & metal" },
@@ -1596,17 +1604,20 @@ const MINERALS = [
       { title: "High-temp magnet doping", detail: "Improves magnet thermal stability in compact, high-power AI server motors." },
       { title: "Green phosphors", detail: "Tb³⁺ produces green emission in fluorescent and LED phosphor blends." },
       { title: "Magneto-optical storage", detail: "TbFeCo films in MO drives and emerging optical memory." },
-      { title: "Fuel cell electrolytes", detail: "Used in solid oxide fuel cells for data center power." }
+      { title: "Magnetostrictive Terfenol-D", detail: "Terbium-dysprosium-iron alloy in precision actuators, sensors and sonar." }
     ],
-    chokepoint: "Subject to China's April 2025 heavy-REE export controls. Lynas began producing terbium concentrate in 2024.",
+    chokepoint: "Licensed by China since April 2025, still in force Oct 2026; the Oct 2025 expansion is suspended, with the truce extended to Jan 10, 2027. Lynas made only ~62 t of Dy+Tb oxide in FY2026. Brazil's Serra Verde, now owned by USA Rare Earth, is ramping Tb-rich clay.",
     mining: [
-      { country: "China", share: 70 },
-      { country: "Myanmar", share: 22 },
-      { country: "Australia", share: 5 }
+      { country: "China", share: 65, note: "South China ionic clays" },
+      { country: "Myanmar", share: 21, note: "Kachin clays, flows to China" },
+      { country: "Australia", share: 5 },
+      { country: "Thailand", share: 3 },
+      { country: "USA", share: 2 },
+      { country: "Brazil", share: 1, note: "Serra Verde ionic clay" }
     ],
     processing: [
-      { country: "China", share: 95 },
-      { country: "Malaysia", share: 3 }
+      { country: "China", share: 98 },
+      { country: "Malaysia", share: 2, note: "Lynas Kuantan" }
     ],
     refining: [
       { country: "China", share: 97 },
@@ -1618,14 +1629,14 @@ const MINERALS = [
     symbol: "Y",
     name: "Yttrium",
     category: "Magnets & REEs",
-    why: "Used to dope GaN/InP semiconductors, in YAG lasers that pattern chips, and as a stabilizer in high-temperature superconducting wire — emerging in data center power.",
+    why: "Yttria coatings protect chip-fab plasma etch chambers and turbine hot sections; yttrium also goes into YAG lasers and YBCO superconducting wire — emerging in data center power.",
     applications: [
       { title: "YAG lasers", detail: "Yttrium aluminum garnet lasers used in semiconductor laser annealing and cutting." },
-      { title: "Phosphors", detail: "Red-emitting phosphors in displays and LEDs." },
+      { title: "Etch-chamber coatings", detail: "Plasma-resistant yttria linings inside semiconductor etch and deposition tools." },
       { title: "Superconductors (YBCO)", detail: "High-temp superconducting tape for emerging data center power links." },
-      { title: "Refractory ceramics", detail: "Crucibles for melting high-purity semiconductor materials." }
+      { title: "Thermal barrier coatings", detail: "Yttria-stabilized zirconia on gas-turbine blades for backup and grid power." }
     ],
-    chokepoint: "China refines ~80% of yttrium. Subject to April 2025 heavy-REE export controls.",
+    chokepoint: "China's April 2025 licensing cut yttrium shipments to the US from 333 t to 17 t over eight months; prices outside China rose ~69-fold year on year by Feb 2026, forcing coating makers to ration. Licensing persists in Oct 2026; Lynas yttrium is not due until 2028.",
     mining: [
       { country: "China", share: 65 },
       { country: "Myanmar", share: 18 },
@@ -1634,14 +1645,13 @@ const MINERALS = [
       { country: "India", share: 2 }
     ],
     processing: [
-      { country: "China", share: 85 },
-      { country: "Malaysia", share: 6, note: "Lynas" },
-      { country: "France", share: 2 }
+      { country: "China", share: 95, note: "Near-sole separator" },
+      { country: "France", share: 2, note: "Solvay La Rochelle" }
     ],
     refining: [
-      { country: "China", share: 85 },
-      { country: "Malaysia", share: 6 },
-      { country: "Estonia", share: 2 }
+      { country: "China", share: 93 },
+      { country: "Germany", share: 3, note: "From Chinese oxide" },
+      { country: "Austria", share: 2, note: "From Chinese oxide" }
     ]
   },
 
@@ -1872,7 +1882,7 @@ const COUNTRY_NAME_TO_ID = {
   "Zimbabwe": "716", "Rwanda": "646", "Zambia": "894", "Austria": "040", "Finland": "246",
   "Taiwan": "158", "Poland": "616", "Iceland": "352", "UK": "826", "Switzerland": "756",
   "Nigeria": "566", "Tanzania": "834", "Madagascar": "450", "Mozambique": "508", "Ukraine": "804",
-  "Turkey": "792", "Ethiopia": "231", "Ghana": "288", "Greenland": "304", "North Korea": "408"
+  "Turkey": "792", "Ethiopia": "231", "Ghana": "288", "Greenland": "304", "North Korea": "408", "Thailand": "764"
 };
 
 /* Tint each country by the highest-priority ACTIVE stage it participates in
