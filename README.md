@@ -43,6 +43,9 @@ Loaded from CDN (no build step, no install):
 
 ## Data sources
 
-Shares are approximate 2024–2025 global percentages, compiled from USGS Mineral
-Commodity Summaries 2025, IEA Critical Minerals Outlook 2025, CSIS, Visual
-Capitalist, Bernreuter, the Cobalt Institute, Mining Technology, and Statista.
+Shares are approximate global percentages, mostly 2025 estimates, refreshed in
+October 2026. They are compiled from USGS Mineral Commodity Summaries 2026, IEA
+Rare Earth Elements 2026 and Global Critical Minerals Outlook 2026, Benchmark
+Mineral Intelligence, CSIS, TrendForce, Bernreuter, the Cobalt Institute, ICSG,
+and company reports. Export-control and project status is current to late
+October 2026.

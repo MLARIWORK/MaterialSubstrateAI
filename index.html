@@ -1076,7 +1076,9 @@ const COORDS = {
   Ghana:       [-1.02,  7.95],
   "North Korea":[127.51, 40.34],
   Thailand:    [100.99, 15.87],
-  Senegal:     [-14.45, 14.50]
+  Senegal:     [-14.45, 14.50],
+  Gabon:       [11.61, -0.80],
+  Mali:        [-3.99, 17.57]
 };
 
 const MINERALS = [
@@ -1688,26 +1690,29 @@ const MINERALS = [
       { title: "EV batteries", detail: "Powers the trucks and logistics fleets servicing data center construction." },
       { title: "Glass strengthening", detail: "Li₂O in display glass for control screens." }
     ],
-    chokepoint: "Australia mines the most spodumene; Chile mines the most brine. But China refines ~65% of battery-grade lithium chemicals.",
+    chokepoint: "China converts about 63% of the world's lithium into chemicals and has restricted export of lithium-processing and LFP/LMFP cathode technology since July 2025. Zimbabwe, now the fourth-largest miner, curbed concentrate exports in Feb 2026 and says its full ban starts Jan 2027.",
     mining: [
-      { country: "Australia", share: 47, note: "Spodumene hard rock" },
-      { country: "Chile", share: 23, note: "Atacama brine" },
-      { country: "China", share: 16 },
-      { country: "Argentina", share: 6, note: "Salar brine" },
-      { country: "Brazil", share: 2 }
+      { country: "Australia", share: 32, note: "Spodumene hard rock" },
+      { country: "China", share: 21 },
+      { country: "Chile", share: 19, note: "Atacama brine" },
+      { country: "Zimbabwe", share: 10, note: "Export curbs since Feb 2026" },
+      { country: "Argentina", share: 8, note: "Salar brine" },
+      { country: "Brazil", share: 4 },
+      { country: "Mali", share: 3, note: "New hard-rock mines" }
     ],
     processing: [
-      { country: "China", share: 65, note: "Lithium carbonate / hydroxide" },
-      { country: "Chile", share: 15 },
-      { country: "Argentina", share: 5 },
-      { country: "Australia", share: 5 },
-      { country: "USA", share: 3 }
+      { country: "China", share: 63, note: "Lithium carbonate / hydroxide" },
+      { country: "Chile", share: 21 },
+      { country: "Argentina", share: 9 },
+      { country: "South Korea", share: 5 },
+      { country: "USA", share: 1 }
     ],
     refining: [
-      { country: "China", share: 65, note: "Battery-grade chemicals" },
-      { country: "Chile", share: 12 },
+      { country: "China", share: 63, note: "Battery-grade chemicals" },
+      { country: "Chile", share: 21 },
+      { country: "Argentina", share: 9 },
       { country: "South Korea", share: 5 },
-      { country: "Japan", share: 4 }
+      { country: "USA", share: 1 }
     ]
   },
   {
@@ -1722,28 +1727,30 @@ const MINERALS = [
       { title: "Superalloys", detail: "Turbine blades for backup-power gas generators." },
       { title: "Catalysts", detail: "Petroleum refining for fuels powering generators." }
     ],
-    chokepoint: "DRC mines ~73% of cobalt; China refines ~70%. The chip industry now relies on cobalt for both batteries AND on-chip interconnects.",
+    chokepoint: "DRC mines ~73% of cobalt and China refines ~79%. DRC banned exports Feb–Oct 2025, then capped them at 96,600 t a year for 2026–27, reclaiming unused quotas from July 2026; cobalt prices more than doubled. Indonesia's nickel-HPAL by-product is the main alternative source.",
     mining: [
-      { country: "DRC", share: 73 },
-      { country: "Indonesia", share: 14 },
+      { country: "DRC", share: 73, note: "Export quotas since Oct 2025" },
+      { country: "Indonesia", share: 14, note: "Nickel HPAL by-product" },
       { country: "Russia", share: 2 },
       { country: "Australia", share: 2 },
       { country: "Canada", share: 1 },
-      { country: "Philippines", share: 1 }
+      { country: "Philippines", share: 1 },
+      { country: "Madagascar", share: 1 }
     ],
     processing: [
-      { country: "China", share: 70, note: "Cobalt sulfate / metal" },
-      { country: "Finland", share: 8, note: "Umicore Kokkola" },
-      { country: "Indonesia", share: 6 },
-      { country: "Canada", share: 4 },
-      { country: "Japan", share: 3 },
-      { country: "Belgium", share: 3 }
+      { country: "China", share: 79, note: "Cobalt sulfate / metal" },
+      { country: "Finland", share: 7, note: "Umicore Kokkola" },
+      { country: "Indonesia", share: 3 },
+      { country: "Canada", share: 3 },
+      { country: "Madagascar", share: 2 },
+      { country: "Japan", share: 2 },
+      { country: "Norway", share: 1 }
     ],
     refining: [
-      { country: "China", share: 75, note: "Battery-grade cobalt sulfate" },
-      { country: "Finland", share: 8 },
-      { country: "Belgium", share: 3 },
-      { country: "Japan", share: 3 }
+      { country: "China", share: 79, note: "Battery-grade cobalt sulfate" },
+      { country: "Finland", share: 7 },
+      { country: "Indonesia", share: 3 },
+      { country: "Japan", share: 2 }
     ]
   },
   {
@@ -1758,15 +1765,15 @@ const MINERALS = [
       { title: "Superalloys", detail: "Inconel for backup gas-turbine generators." },
       { title: "Plating", detail: "Corrosion-resistant plating on connectors and hardware." }
     ],
-    chokepoint: "Indonesia mines >50% of global nickel and is rapidly building HPAL refining. China owns much of Indonesia's nickel processing capacity.",
+    chokepoint: "Indonesia mined ~67% of nickel in 2025 and is the top refiner, largely through Chinese-owned smelters. In 2026 it cut ore mining quotas (RKAB) to roughly 250–270 Mt from 379 Mt in 2025, tightening supply; mid-year revisions added some volume. China and Indonesia make most battery-grade nickel sulfate.",
     mining: [
-      { country: "Indonesia", share: 55 },
-      { country: "Philippines", share: 11 },
-      { country: "Russia", share: 6 },
-      { country: "New Caledonia", share: 6 },
-      { country: "Australia", share: 4 },
+      { country: "Indonesia", share: 67, note: "2026 RKAB quota cut" },
+      { country: "Philippines", share: 7 },
+      { country: "Russia", share: 5 },
       { country: "Canada", share: 4 },
-      { country: "China", share: 3 }
+      { country: "New Caledonia", share: 4 },
+      { country: "China", share: 3 },
+      { country: "Brazil", share: 2 }
     ],
     processing: [
       { country: "Indonesia", share: 50, note: "Chinese-owned HPAL/RKEF" },
@@ -1781,6 +1788,36 @@ const MINERALS = [
       { country: "Russia", share: 8 },
       { country: "Japan", share: 6 },
       { country: "Canada", share: 5 }
+    ]
+  },
+  {
+    id: "manganese",
+    symbol: "Mn",
+    name: "Manganese",
+    category: "Energy Storage",
+    why: "Battery-grade manganese sulfate goes into the NMC, LMFP and emerging LMR cathodes used in data center UPS and grid storage, while manganese itself is indispensable to steel — from transformer electrical steel to building frames — and to aluminium alloys.",
+    applications: [
+      { title: "Battery cathodes", detail: "High-purity manganese sulfate feeds NMC, LMFP and LMR cathodes in data center UPS and grid-scale BESS." },
+      { title: "Transformer electrical steel", detail: "Manganese controls sulfur and grain structure in the steel cores of transformers feeding AI campuses." },
+      { title: "Structural steel", detail: "Nearly 90% of manganese ends up in steel, including the beams, rebar and racks of data center buildings." },
+      { title: "Aluminium alloys", detail: "Manganese adds strength and corrosion resistance to aluminium used in cooling hardware and enclosures." }
+    ],
+    chokepoint: "South Africa and Gabon mine ~63% of manganese, but China makes ~93% of electrolytic manganese metal and ~95% of battery-grade manganese sulfate. Outside China only South Africa's MMC is commissioning HPMSM capacity (2026); Euro Manganese, Giyani and Element 25 are pre-production. Gabon plans to halt raw-ore exports in 2029.",
+    mining: [
+      { country: "South Africa", share: 38, note: "Kalahari field" },
+      { country: "Gabon", share: 25, note: "Moanda (Eramet/Comilog)" },
+      { country: "Ghana", share: 10 },
+      { country: "Australia", share: 8, note: "GEMCO restarted May 2025" },
+      { country: "Brazil", share: 4 },
+      { country: "India", share: 4 },
+      { country: "China", share: 4 }
+    ],
+    processing: [
+      { country: "China", share: 93, note: "Electrolytic manganese metal (EMM)" },
+      { country: "South Africa", share: 2, note: "MMC, sole non-China EMM" }
+    ],
+    refining: [
+      { country: "China", share: 95, note: "Battery-grade HPMSM" }
     ]
   }
 ];
@@ -1902,7 +1939,8 @@ const COUNTRY_NAME_TO_ID = {
   "Zimbabwe": "716", "Rwanda": "646", "Zambia": "894", "Austria": "040", "Finland": "246",
   "Taiwan": "158", "Poland": "616", "Iceland": "352", "UK": "826", "Switzerland": "756",
   "Nigeria": "566", "Tanzania": "834", "Madagascar": "450", "Mozambique": "508", "Ukraine": "804",
-  "Turkey": "792", "Ethiopia": "231", "Ghana": "288", "Greenland": "304", "North Korea": "408", "Thailand": "764", "Senegal": "686"
+  "Turkey": "792", "Ethiopia": "231", "Ghana": "288", "Greenland": "304", "North Korea": "408", "Thailand": "764", "Senegal": "686",
+  "Gabon": "266", "Mali": "466"
 };
 
 /* Tint each country by the highest-priority ACTIVE stage it participates in
