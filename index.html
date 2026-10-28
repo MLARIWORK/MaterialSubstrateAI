@@ -953,7 +953,7 @@
       <ul class="caveats">
         <li>Many of these minerals are dual-use. Silicon production is dominated by solar, copper by general electrification, lithium by EVs. Shares reflect total global production rather than the AI-specific slice.</li>
         <li>Rare-earth aggregates, where cited, refer to the four magnet REEs — neodymium, praseodymium, dysprosium, and terbium — the IEA's standard reporting category.</li>
-        <li>For silicon, "refining" here means semiconductor wafer fabrication (TSMC, Samsung, SK Hynix). Polysilicon production sits under "processing."</li>
+        <li>For silicon, "refining" here means advanced logic wafer fabrication (16/14nm and below) — TSMC, Samsung, Intel, SMIC — by capacity share. Polysilicon production sits under "processing."</li>
         <li>Refining shares for cobalt, nickel, and lithium reflect battery-grade chemicals (sulfates and hydroxides), not refined metal.</li>
         <li>Hafnium figures are estimated — the commercial market is small and reporting is sparse.</li>
         <li>Selection of which minerals qualify as "AI-critical" is editorial. The threshold was "plays a non-trivial role in building, powering, cooling, storing, or interconnecting AI compute."</li>
@@ -1061,7 +1061,8 @@ const COORDS = {
   Ethiopia:    [40.49,  9.15],
   Ghana:       [-1.02,  7.95],
   "North Korea":[127.51, 40.34],
-  Thailand:    [100.99, 15.87]
+  Thailand:    [100.99, 15.87],
+  Senegal:     [-14.45, 14.50]
 };
 
 const MINERALS = [
@@ -1078,7 +1079,7 @@ const MINERALS = [
       { title: "MEMS sensors", detail: "Accelerometers, gyroscopes, and pressure sensors that monitor data center cooling and seismic activity." },
       { title: "Photovoltaics", detail: "Solar cells powering the new generation of clean-energy AI data centers." }
     ],
-    chokepoint: "China refines 93.5% of global polysilicon. Only Wacker (Germany) and Hemlock (US) produce semiconductor-grade polysilicon at scale outside Asia.",
+    chokepoint: "China made 93.5% of world polysilicon in 2024 and almost 80% of silicon metal and ferrosilicon in 2025. Wacker and Hemlock lead chip-grade supply outside Asia. A 15% US Section 232 tariff plus minimum import prices on polysilicon and wafers starts Dec 4, 2026.",
     mining: [
       { country: "China", share: 80, note: "Silicon metal & ferrosilicon" },
       { country: "Russia", share: 5 },
@@ -1090,14 +1091,13 @@ const MINERALS = [
       { country: "China", share: 94, note: "Polysilicon refining" },
       { country: "Germany", share: 2, note: "Wacker Chemie" },
       { country: "USA", share: 2, note: "Hemlock Semiconductor" },
-      { country: "Malaysia", share: 1, note: "Tokuyama" }
+      { country: "Malaysia", share: 1, note: "OCI TerraSolar" }
     ],
     refining: [
-      { country: "Taiwan", share: 60, note: "Wafer fabrication (TSMC)" },
-      { country: "South Korea", share: 18, note: "Samsung, SK Hynix" },
-      { country: "Japan", share: 12, note: "SUMCO, Shin-Etsu" },
-      { country: "USA", share: 5 },
-      { country: "China", share: 3 }
+      { country: "Taiwan", share: 66, note: "Advanced logic fabs, TSMC" },
+      { country: "South Korea", share: 11, note: "Samsung Foundry" },
+      { country: "USA", share: 10, note: "Intel, TSMC Arizona" },
+      { country: "China", share: 9, note: "SMIC" }
     ]
   },
   {
@@ -1112,7 +1112,7 @@ const MINERALS = [
       { title: "Laser diodes", detail: "VCSELs and edge-emitting lasers used in datacom optical I/O and LiDAR." },
       { title: "LEDs", detail: "Indicator and illumination LEDs throughout server infrastructure." }
     ],
-    chokepoint: "China controls 99% of refined gallium production. In December 2024 China banned gallium exports to the United States.",
+    chokepoint: "China produced ~99% of primary gallium in 2025. Its Dec 2024 ban on US exports was suspended in Nov 2025 until Nov 27, 2026, yet licensing keeps US-bound flows near zero. Non-China supply is nascent: a Louisiana pilot circuit (Atalco) is testing; Alcoa's Wagerup plant reached FID mid-2026.",
     mining: [
       { country: "China", share: 98, note: "Byproduct of bauxite/alumina" },
       { country: "Russia", share: 1 },
@@ -1120,9 +1120,8 @@ const MINERALS = [
     ],
     processing: [
       { country: "China", share: 99, note: "Primary low-purity Ga" },
-      { country: "Russia", share: 0.5 },
-      { country: "South Korea", share: 0.3 },
-      { country: "Japan", share: 0.2 }
+      { country: "Russia", share: 0.7 },
+      { country: "Japan", share: 0.3 }
     ],
     refining: [
       { country: "China", share: 80, note: "High-purity GaN/GaAs wafers" },
@@ -1144,18 +1143,19 @@ const MINERALS = [
       { title: "Infrared optics", detail: "Thermal imaging cameras used to monitor server hotspots and cooling." },
       { title: "Photodetectors", detail: "Receivers in optical data links between AI training clusters." }
     ],
-    chokepoint: "China produces ~68% of refined germanium. Banned exports to the US in December 2024. Belgium (Umicore) is the largest non-Chinese refiner.",
+    chokepoint: "China supplies roughly 60–70% of germanium. Its Dec 2024 US export ban was suspended in Nov 2025 until Nov 27, 2026, but 2023 licensing stays and China's metal exports fell ~60% in Jan–Sep 2025. Umicore (Belgium) leads outside China, now fed partly by DRC concentrate.",
     mining: [
       { country: "China", share: 68, note: "Zinc/coal-ash byproduct" },
       { country: "Russia", share: 5 },
       { country: "USA", share: 3 },
+      { country: "DRC", share: 3, note: "Big Hill tailings (Gécamines)" },
       { country: "Canada", share: 2 }
     ],
     processing: [
       { country: "China", share: 60 },
       { country: "Belgium", share: 15, note: "Umicore, Olen" },
       { country: "Russia", share: 8 },
-      { country: "Canada", share: 5, note: "5N Plus" },
+      { country: "Canada", share: 5, note: "Teck Trail" },
       { country: "Germany", share: 5 },
       { country: "USA", share: 5 }
     ],
@@ -1179,7 +1179,7 @@ const MINERALS = [
       { title: "Low-temp solders", detail: "Indium-based solders for bonding heat-sensitive chip packages." },
       { title: "Thermal interface materials", detail: "Indium foil between AI chips and heatsinks for superior heat transfer." }
     ],
-    chokepoint: "China imposed export licensing on indium in 2025. ~58% of global indium refining sits in China.",
+    chokepoint: "China refined ~70% of world indium in 2025. Its Feb 2025 export licensing remains in force; Chinese unwrought indium exports fell ~72% year on year by Sep 2025. South Korea (Korea Zinc's Onsan smelter) is the main alternative at ~16%.",
     mining: [
       { country: "China", share: 58, note: "Zinc smelter byproduct" },
       { country: "South Korea", share: 14 },
@@ -1188,16 +1188,20 @@ const MINERALS = [
       { country: "Peru", share: 4 }
     ],
     processing: [
-      { country: "China", share: 50 },
-      { country: "South Korea", share: 18 },
-      { country: "Japan", share: 12 },
-      { country: "Canada", share: 8 }
+      { country: "China", share: 69, note: "Primary indium recovery" },
+      { country: "South Korea", share: 16, note: "Korea Zinc, Onsan" },
+      { country: "Japan", share: 6 },
+      { country: "Canada", share: 4 },
+      { country: "France", share: 2 },
+      { country: "Belgium", share: 2 }
     ],
     refining: [
-      { country: "China", share: 55, note: "Refined indium ingots & ITO" },
-      { country: "South Korea", share: 18 },
-      { country: "Japan", share: 14 },
-      { country: "Belgium", share: 5 }
+      { country: "China", share: 69, note: "Refined indium ingots & ITO" },
+      { country: "South Korea", share: 16 },
+      { country: "Japan", share: 6 },
+      { country: "Canada", share: 4 },
+      { country: "France", share: 2 },
+      { country: "Belgium", share: 2 }
     ]
   },
   {
@@ -1212,13 +1216,15 @@ const MINERALS = [
       { title: "Superalloys", detail: "Turbine blades in datacenter gas generators for backup power." },
       { title: "Plasma cutting", detail: "Electrodes used in semiconductor fab tooling." }
     ],
-    chokepoint: "France (Framatome) and the US dominate nuclear-grade hafnium separation. Derived from zirconium processing — supply is structurally tiny.",
+    chokepoint: "Hafnium is a byproduct of nuclear-grade zirconium; aerospace/electronic-grade capacity is only ~140–150 t a year (2025 estimate). Framatome (France), two US plants (Oregon, Utah) and China lead. US import prices peaked near $6,100/kg in 2023 and averaged ~$3,800 in 2025.",
     mining: [
-      { country: "Australia", share: 40, note: "From zircon sands" },
-      { country: "South Africa", share: 25 },
-      { country: "Mozambique", share: 12 },
-      { country: "China", share: 10 },
-      { country: "USA", share: 6 }
+      { country: "Australia", share: 33, note: "From zircon sands" },
+      { country: "South Africa", share: 22 },
+      { country: "Mozambique", share: 13 },
+      { country: "China", share: 8 },
+      { country: "USA", share: 8 },
+      { country: "Senegal", share: 6 },
+      { country: "Indonesia", share: 4 }
     ],
     processing: [
       { country: "France", share: 45, note: "Framatome Jarrie" },
@@ -1245,13 +1251,13 @@ const MINERALS = [
       { title: "Refrigerants", detail: "Fluorocarbons used in chiller systems cooling AI data centers." },
       { title: "Aluminum smelting flux", detail: "Used to produce aluminum heat sinks and chassis." }
     ],
-    chokepoint: "China supplies ~63% of global fluorspar and dominates refined HF capacity. US is 100% import-reliant for fluorspar.",
+    chokepoint: "China mined ~60% of world fluorspar in 2025 yet is now a big importer, mostly from Mongolia, as it curbs domestic mining. The US is 100% import-reliant, with Mexico supplying ~64%. A Newfoundland mine restarted in Aug 2025; a Utah mine is under construction.",
     mining: [
-      { country: "China", share: 63 },
-      { country: "Mexico", share: 14 },
-      { country: "Mongolia", share: 12 },
+      { country: "China", share: 60 },
+      { country: "Mexico", share: 15 },
+      { country: "Mongolia", share: 15 },
       { country: "South Africa", share: 4 },
-      { country: "Vietnam", share: 3 }
+      { country: "Vietnam", share: 2 }
     ],
     processing: [
       { country: "China", share: 70, note: "Acid-grade fluorspar" },
@@ -1278,7 +1284,7 @@ const MINERALS = [
       { title: "NdFeB magnets", detail: "The 'B' in neodymium-iron-boron magnets — server fans, HDD voice coils, BLDC motors." },
       { title: "Borosilicate glass", detail: "Heat-resistant glass in chip packaging substrates and photomask blanks." }
     ],
-    chokepoint: "Turkey's state-owned Eti Maden controls ~65% of mined boron; Rio Tinto's Boron, California operation provides most of the rest. While less extreme than China's grip on gallium, the two-country concentration leaves limited alternatives.",
+    chokepoint: "Turkey's state miner Eti Maden supplies roughly 60–65% of world borates and holds most known reserves; three Southern California producers, led by Rio Tinto, are a distant second. The US listed boron as a critical mineral in Nov 2025; Rio Tinto's Jadar (Serbia) is an EU strategic project.",
     mining: [
       { country: "Turkey", share: 65, note: "Eti Maden (state-owned)" },
       { country: "USA", share: 12, note: "Rio Tinto, Boron CA" },
@@ -1882,7 +1888,7 @@ const COUNTRY_NAME_TO_ID = {
   "Zimbabwe": "716", "Rwanda": "646", "Zambia": "894", "Austria": "040", "Finland": "246",
   "Taiwan": "158", "Poland": "616", "Iceland": "352", "UK": "826", "Switzerland": "756",
   "Nigeria": "566", "Tanzania": "834", "Madagascar": "450", "Mozambique": "508", "Ukraine": "804",
-  "Turkey": "792", "Ethiopia": "231", "Ghana": "288", "Greenland": "304", "North Korea": "408", "Thailand": "764"
+  "Turkey": "792", "Ethiopia": "231", "Ghana": "288", "Greenland": "304", "North Korea": "408", "Thailand": "764", "Senegal": "686"
 };
 
 /* Tint each country by the highest-priority ACTIVE stage it participates in
